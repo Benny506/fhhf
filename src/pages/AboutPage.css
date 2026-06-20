@@ -1,0 +1,176 @@
+.about-hero {
+  height: 100vh;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--color-primary);
+}
+
+.about-hero-img-wrapper {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 120%; /* For parallax travel */
+  z-index: 0;
+}
+
+.about-hero-img-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.6;
+}
+
+.about-hero-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  color: var(--color-white);
+  padding: 0 1rem;
+}
+
+.about-hero-title {
+  font-family: var(--font-family-heading);
+  font-size: clamp(3rem, 8vw, 7rem);
+  font-weight: 700;
+  line-height: 1;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.about-hero-subtitle {
+  font-family: var(--font-family-body);
+  font-size: clamp(1.2rem, 2vw, 1.8rem);
+  font-weight: 400;
+  max-width: 800px;
+  margin: 0 auto;
+  opacity: 0.9;
+}
+
+/* Full Scroll Hijacking Track */
+.story-hijack-track {
+  /* height set dynamically inline */
+  position: relative;
+  background-color: var(--color-bg-light);
+}
+
+.story-hijack-sticky {
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+@media (min-width: 992px) {
+  .story-hijack-sticky {
+    flex-direction: row;
+  }
+}
+
+.story-hijack-text-col {
+  width: 100%;
+  height: 50vh;
+  position: relative;
+  overflow: hidden;
+  padding: 2rem;
+}
+
+.story-hijack-image-col {
+  width: 100%;
+  height: 50vh;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 992px) {
+  .story-hijack-text-col, .story-hijack-image-col {
+    width: 50%;
+    height: 100vh;
+    padding: 0;
+  }
+}
+
+.hijack-text-slide-track {
+  width: 100%;
+  /* height set dynamically inline */
+}
+
+.hijack-text-block {
+  /* height set dynamically inline */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 2rem;
+}
+
+@media (min-width: 992px) {
+  .hijack-text-block {
+    padding: 0 6rem;
+  }
+}
+
+/* Team Section */
+.team-card {
+  position: relative;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+  background-color: var(--color-white);
+}
+
+.team-image-wrapper {
+  width: 100%;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+}
+
+.team-image-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s ease, filter 0.8s ease;
+  filter: grayscale(100%);
+}
+
+.team-card:hover .team-image-wrapper img {
+  transform: scale(1.05);
+  filter: grayscale(0%);
+}
+
+.team-info {
+  padding: 1.5rem 0;
+  text-align: center;
+}
+
+.team-name {
+  font-family: var(--font-family-heading);
+  font-size: 1.5rem;
+  color: var(--color-primary);
+  margin-bottom: 0.25rem;
+  transition: color 0.3s ease;
+}
+
+.team-role {
+  font-family: var(--font-family-body);
+  font-size: 0.95rem;
+  color: var(--color-secondary);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* General Layout spacing */
+.about-section-spacing {
+  padding: 100px 0;
+}
+
+@media (min-width: 992px) {
+  .about-section-spacing {
+    padding: 150px 0;
+  }
+}

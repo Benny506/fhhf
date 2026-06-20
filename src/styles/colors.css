@@ -1,0 +1,32 @@
+:root {
+  /* FHHF Brand Colors */
+  --color-primary: #001F54;
+  --color-secondary: #D4AF37;
+  --color-white: #FFFFFF;
+  --color-black: #111827;
+
+  /* Theme Utility Colors */
+  --color-success: #198754;
+  --color-info: #0dcaf0;
+  --color-warning: #ffc107;
+  --color-danger: #dc3545;
+  --color-light: #f8f9fa;
+  --color-dark: #212529;
+
+  /* Hover and Active states */
+  --color-primary-hover: #001438;
+  --color-secondary-hover: #b8972e;
+  --color-success-hover: #157347;
+  --color-info-hover: #31d2f2;
+  --color-warning-hover: #ffca2c;
+  --color-danger-hover: #bb2d3b;
+  
+  /* Text specific shades */
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #6b7280;
+  
+  /* Borders & Backgrounds */
+  --color-border: #e5e7eb;
+  --color-bg-light: #f3f4f6;
+}

@@ -1,0 +1,25 @@
+@import 'bootstrap/dist/css/bootstrap.min.css';
+
+@import './styles/colors.css';
+@import './styles/fonts.css';
+@import './styles/bootstrap-override.css';
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-bg-light);
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Common utility classes */
+.fhhf-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1.5rem;
+}

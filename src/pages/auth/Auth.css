@@ -1,0 +1,35 @@
+.auth-page-wrapper {
+  background-color: var(--color-background);
+  min-height: 100vh;
+}
+
+.auth-glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08);
+}
+
+.auth-input {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(0, 31, 84, 0.1) !important;
+  color: var(--color-primary) !important;
+  padding: 1rem 1.25rem !important;
+  border-radius: 12px !important;
+  transition: all 0.3s ease !important;
+}
+
+.auth-input:focus {
+  background: #ffffff !important;
+  border-color: var(--color-secondary) !important;
+  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.15) !important;
+}
+
+.auth-input::placeholder {
+  color: #adb5bd !important;
+}
+
+.otp-input {
+  padding: 0 !important;
+}

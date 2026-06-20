@@ -1,0 +1,177 @@
+/* src/pages/HomePage.css */
+
+.home-hero-section {
+  min-height: 85vh;
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background-color: var(--color-bg-light);
+  border-radius: 0 0 40px 40px;
+}
+
+.home-hero-content {
+  position: relative;
+  z-index: 10;
+}
+
+.hero-headline {
+  font-family: var(--font-family-heading);
+  font-size: clamp(3rem, 5vw, 4.5rem);
+  font-weight: 700;
+  color: var(--color-primary);
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+}
+
+.hero-subheadline {
+  font-family: var(--font-family-body);
+  font-size: 1.15rem;
+  color: var(--color-text-secondary);
+  line-height: 1.7;
+  max-width: 90%;
+  margin-bottom: 2.5rem;
+}
+
+/* Impact Counter Band */
+.impact-band {
+  background-color: var(--color-primary);
+  color: var(--color-white);
+  padding: 5rem 0;
+  margin-top: -20px;
+  border-radius: 40px;
+  position: relative;
+  z-index: 20;
+}
+
+.impact-number {
+  font-family: var(--font-family-heading);
+  font-size: clamp(2.5rem, 4vw, 3.5rem);
+  font-weight: 700;
+  color: var(--color-secondary);
+  line-height: 1;
+  margin-bottom: 0.5rem;
+}
+
+.impact-label {
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  opacity: 0.8;
+}
+
+/* Bento Box Grid */
+.bento-grid {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 1.5rem;
+  margin-top: 5rem;
+}
+
+.bento-card {
+  position: relative;
+  border-radius: 30px;
+  overflow: hidden;
+  min-height: 350px;
+  background-color: var(--color-bg-light);
+}
+
+.bento-card-large {
+  grid-column: span 12;
+}
+
+.bento-card-medium {
+  grid-column: span 12;
+}
+
+@media (min-width: 992px) {
+  .bento-card-large {
+    grid-column: span 8;
+  }
+
+  .bento-card-medium {
+    grid-column: span 4;
+  }
+
+  .bento-card-full {
+    grid-column: span 12;
+  }
+}
+
+.bento-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.8s ease;
+}
+
+.bento-lottie {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70%; /* Leaves room for the text at the bottom */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.8s ease;
+}
+
+.bento-lottie > div {
+  width: 70%;
+  max-width: 200px;
+}
+
+.bento-card:hover .bento-image {
+  transform: scale(1.05);
+}
+
+.bento-card:hover .bento-lottie {
+  transform: scale(1.1);
+}
+
+.bento-overlay {
+  position: absolute;
+  bottom: 1.5rem;
+  left: 1.5rem;
+  right: 1.5rem;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border-radius: 20px;
+  padding: 1.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  transition: transform 0.4s ease;
+}
+
+.bento-card:hover .bento-overlay {
+  transform: translateY(-5px);
+}
+
+.bento-title {
+  font-family: var(--font-family-heading);
+  color: var(--color-primary);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+/* Spotlight Section */
+.spotlight-section {
+  padding: 8rem 0;
+}
+
+.spotlight-image-wrapper {
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 20px 40px rgba(0, 31, 84, 0.1);
+  position: relative;
+}
+
+.spotlight-image-wrapper img {
+  width: 100%;
+  height: auto;
+  display: block;
+}

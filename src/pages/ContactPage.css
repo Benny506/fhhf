@@ -1,0 +1,61 @@
+/* ContactPage.css */
+
+.contact-page-wrapper {
+  background-color: var(--color-bg-light);
+  min-height: 100vh;
+}
+
+.contact-section-spacing {
+  padding-top: clamp(4rem, 8vw, 8rem);
+  padding-bottom: clamp(4rem, 8vw, 8rem);
+}
+
+.contact-glass-card {
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 20px 40px rgba(0, 31, 84, 0.05);
+}
+
+.contact-input {
+  background: rgba(255, 255, 255, 0.9) !important;
+  border: 1px solid rgba(0, 31, 84, 0.1) !important;
+  border-radius: 12px !important;
+  padding: 1rem 1.25rem !important;
+  font-size: 1.05rem !important;
+  color: var(--color-primary) !important;
+  transition: all 0.3s ease;
+}
+
+.contact-input:focus {
+  border-color: var(--color-secondary) !important;
+  box-shadow: 0 0 0 4px rgba(255, 215, 0, 0.15) !important;
+  background: #ffffff !important;
+}
+
+.faq-accordion .accordion-item {
+  border: none;
+  border-bottom: 1px solid rgba(0, 31, 84, 0.1);
+  background: transparent;
+  margin-bottom: 1rem;
+}
+
+.faq-accordion .accordion-button {
+  background: transparent;
+  color: var(--color-primary);
+  font-weight: 600;
+  font-size: 1.15rem;
+  padding: 1.5rem 0;
+  box-shadow: none !important;
+}
+
+.faq-accordion .accordion-button:not(.collapsed) {
+  color: var(--color-secondary);
+}
+
+.faq-accordion .accordion-body {
+  padding: 0 0 1.5rem 0;
+  color: var(--color-secondary);
+  line-height: 1.8;
+}

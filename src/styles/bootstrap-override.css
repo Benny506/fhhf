@@ -1,0 +1,84 @@
+/* Override Bootstrap 5 CSS Variables */
+:root {
+  --bs-primary: var(--color-primary);
+  --bs-secondary: var(--color-secondary);
+  --bs-success: var(--color-success);
+  --bs-info: var(--color-info);
+  --bs-warning: var(--color-warning);
+  --bs-danger: var(--color-danger);
+  --bs-light: var(--color-light);
+  --bs-dark: var(--color-dark);
+  
+  /* RGB values for transparent rgba() usage in Bootstrap */
+  --bs-primary-rgb: 0, 31, 84;     /* #001F54 */
+  --bs-secondary-rgb: 212, 175, 55; /* #D4AF37 */
+  --bs-success-rgb: 25, 135, 84;
+  --bs-info-rgb: 13, 202, 240;
+  --bs-warning-rgb: 255, 193, 7;
+  --bs-danger-rgb: 220, 53, 69;
+  
+  --bs-body-bg: var(--color-white);
+  --bs-body-color: var(--color-text-primary);
+  --bs-heading-color: var(--color-primary);
+  
+  --bs-link-color: var(--color-secondary);
+  --bs-link-hover-color: var(--color-primary);
+}
+
+/* Force specific background utilities to use our theme colors */
+.bg-primary { background-color: var(--color-primary) !important; }
+.bg-secondary { background-color: var(--color-secondary) !important; }
+.bg-success { background-color: var(--color-success) !important; }
+.bg-info { background-color: var(--color-info) !important; }
+.bg-warning { background-color: var(--color-warning) !important; }
+.bg-danger { background-color: var(--color-danger) !important; }
+
+/* Force specific text utilities to use our theme colors */
+.text-primary { color: var(--color-primary) !important; }
+.text-secondary { color: var(--color-secondary) !important; }
+.text-success { color: var(--color-success) !important; }
+.text-info { color: var(--color-info) !important; }
+.text-warning { color: var(--color-warning) !important; }
+.text-danger { color: var(--color-danger) !important; }
+.text-muted { color: var(--color-text-muted) !important; }
+
+/* Override Primary Button styles */
+.btn-primary {
+  background-color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+  color: var(--color-white) !important;
+}
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+  background-color: var(--color-primary-hover) !important;
+  border-color: var(--color-primary-hover) !important;
+}
+
+/* Override Secondary Button styles */
+.btn-secondary {
+  background-color: var(--color-secondary) !important;
+  border-color: var(--color-secondary) !important;
+  color: var(--color-white) !important;
+}
+.btn-secondary:hover, .btn-secondary:focus, .btn-secondary:active {
+  background-color: var(--color-secondary-hover) !important;
+  border-color: var(--color-secondary-hover) !important;
+}
+
+/* Outline Buttons */
+.btn-outline-primary {
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary) !important;
+}
+.btn-outline-primary:hover {
+  background-color: var(--color-primary) !important;
+  color: var(--color-white) !important;
+}
+
+.btn-outline-secondary {
+  color: var(--color-secondary) !important;
+  border-color: var(--color-secondary) !important;
+}
+.btn-outline-secondary:hover {
+  background-color: var(--color-secondary) !important;
+  color: var(--color-white) !important;
+}
