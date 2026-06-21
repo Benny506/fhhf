@@ -16,3 +16,10 @@ export const ADMIN_CONTACT = {
   },
   OFFICE_HOURS: "Mon - Fri, 9:00 AM - 6:00 PM (EST)"
 };
+
+export const EMAIL_CONFIG = {
+  ADMIN_EMAIL: "olomufeh@gmail.com",
+  FROM_EMAIL: "noreply@controlgenesis.com",
+  FROM_NAME: "FHHF Administration",
+  LOGO_URL: "https://ogottjnxqctpbvybldqx.supabase.co/storage/v1/object/public/site-assets/lgo.jpeg"
+};

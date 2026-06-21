@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit';
 
 const initialState = {
   instructorCourses: null, // null indicates not fetched yet, array indicates fetched
+  enrolledCourses: null,
 };
 
 export const courseSlice = createSlice({
@@ -18,10 +19,13 @@ export const courseSlice = createSlice({
       if (state.instructorCourses) {
         state.instructorCourses = state.instructorCourses.filter(c => c.id !== action.payload);
       }
-    }
+    },
+    setEnrolledCourses: (state, action) => {
+      state.enrolledCourses = action.payload;
+    },
   },
 });
 
-export const { setInstructorCourses, clearInstructorCourses, removeCourseLocally } = courseSlice.actions;
+export const { setInstructorCourses, clearInstructorCourses, removeCourseLocally, setEnrolledCourses } = courseSlice.actions;
 
 export default courseSlice.reducer;

@@ -20,6 +20,7 @@ import UserOverview from './pages/dashboard/UserOverview';
 import UserSettings from './pages/dashboard/UserSettings';
 import InstructorCourses from './pages/dashboard/courses/InstructorCourses';
 import CreateCourseWizard from './pages/dashboard/courses/CreateCourseWizard';
+import EnrolledCourses from './pages/dashboard/courses/EnrolledCourses';
 
 // Auth Pages
 import AuthProvider from './components/auth/AuthProvider';
@@ -28,9 +29,12 @@ import RegisterPage from './pages/auth/RegisterPage';
 import VerifyOtpPage from './pages/auth/VerifyOtpPage';
 import ForgotPasswordPage from './pages/auth/ForgotPasswordPage';
 import ResetPasswordPage from './pages/auth/ResetPasswordPage';
+import CompleteProfilePage from './pages/auth/CompleteProfilePage';
 
 // Public Pages
 import CoursesPage from './pages/CoursesPage';
+import CourseDetailsPage from './pages/CourseDetailsPage';
+import CoursePlayerPage from './pages/CoursePlayerPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 import { ReactLenis } from 'lenis/react';
@@ -52,6 +56,7 @@ function App() {
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/courses" element={<CoursesPage />} />
+                <Route path="/courses/:courseId" element={<CourseDetailsPage />} />
                 
                 {/* Auth Routes */}
                 <Route path="/login" element={<LoginPage />} />
@@ -59,6 +64,7 @@ function App() {
                 <Route path="/verify-otp" element={<VerifyOtpPage />} />
                 <Route path="/forgot-password" element={<ForgotPasswordPage />} />
                 <Route path="/reset-password" element={<ResetPasswordPage />} />
+                <Route path="/complete-profile" element={<CompleteProfilePage />} />
               </Route>
 
               {/* Protected Dashboard Routes */}
@@ -69,10 +75,18 @@ function App() {
               }>
                 <Route index element={<UserOverview />} />
                 <Route path="settings" element={<UserSettings />} />
+                <Route path="enrolled" element={<EnrolledCourses />} />
                 <Route path="courses" element={<InstructorCourses />} />
                 <Route path="courses/builder" element={<CreateCourseWizard />} />
                 <Route path="courses/builder/:courseId" element={<CreateCourseWizard />} />
               </Route>
+
+              {/* Protected Learning Routes */}
+              <Route path="/learn/:courseId" element={
+                <ProtectedRoute>
+                  <CoursePlayerPage />
+                </ProtectedRoute>
+              } />
               
               {/* Fallback 404 Route */}
               <Route path="*" element={<NotFoundPage />} />

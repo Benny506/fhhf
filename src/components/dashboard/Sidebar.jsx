@@ -2,7 +2,7 @@ import React from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { Offcanvas } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
-import { BsGrid1X2Fill, BsPersonFill, BsBoxArrowRight, BsPencilSquare } from 'react-icons/bs';
+import { BsGrid1X2Fill, BsPersonFill, BsBoxArrowRight, BsPencilSquare, BsBook } from 'react-icons/bs';
 import Logo from '../ui/Logo';
 import { showConfirmModal, showAppLoader, hideAppLoader } from '../../redux/slices/uiSlice';
 import { clearAuth } from '../../redux/slices/authSlice';
@@ -38,6 +38,7 @@ export default function Sidebar({ showMobile, onHideMobile, isMobile }) {
 
   const navLinks = [
     { name: 'Overview', path: '/dashboard', icon: <BsGrid1X2Fill size={18} /> },
+    { name: 'My Learning', path: '/dashboard/enrolled', icon: <BsBook size={18} /> },
     { name: 'My Courses', path: '/dashboard/courses', icon: <BsPencilSquare size={18} /> },
     { name: 'Settings', path: '/dashboard/settings', icon: <BsPersonFill size={18} /> },
   ];

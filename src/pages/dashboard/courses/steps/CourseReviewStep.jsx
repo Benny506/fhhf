@@ -1,14 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, ListGroup, Badge, Row, Col } from 'react-bootstrap';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
 import { showAppLoader, hideAppLoader, addAlert } from '../../../../redux/slices/uiSlice';
-import supabase from '../../../../utils/supabase';
+import supabase, { SUPABASE_URL, SUPABASE_ANON_KEY } from '../../../../utils/supabase';
+import { EMAIL_CONFIG } from '../../../../constants/adminConstants';
 import { BsCheckCircleFill, BsXCircleFill, BsRocketTakeoff } from 'react-icons/bs';
 
 export default function CourseReviewStep({ course, onPrev }) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.user);
   const [stats, setStats] = useState({ modules: 0, lessons: 0, quizzes: 0 });
   const [isValidating, setIsValidating] = useState(true);
 
@@ -40,7 +43,7 @@ export default function CourseReviewStep({ course, onPrev }) {
 
   const checks = [
     { label: 'Course Title & Description', passed: !!course?.title && !!course?.description },
-    { label: 'Course Thumbnail Uploaded', passed: !!course?.thumbnail_url },
+    { label: 'Course Thumbnail or Promo Video', passed: !!course?.thumbnail_image || !!course?.thumbnail_url },
     { label: 'At least 1 Module', passed: stats.modules > 0 },
     { label: 'At least 1 Lesson', passed: stats.lessons > 0 },
     { label: 'Pricing Configured', passed: course?.is_free !== null },
@@ -51,14 +54,51 @@ export default function CourseReviewStep({ course, onPrev }) {
   const handleSubmitForApproval = async () => {
     if (!canPublish) return;
 
-    dispatch(showAppLoader('Submitting for approval...'));
+    dispatch(showAppLoader('Submitting for approval and notifying admins...'));
     try {
       const { error } = await supabase
         .from('fhhf_courses')
         .update({ status: 'pending_approval' })
         .eq('id', course.id);
 
-      if (error) throw error;
+      if (error) {
+        console.log(error)
+        throw error
+      };
+
+      // Notify Admin
+      const emailHtml = `
+        <div style="font-family: sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+          <div style="text-align: center; margin-bottom: 20px;">
+            <img src="${EMAIL_CONFIG.LOGO_URL}" alt="FHHF Logo" style="max-height: 60px;" />
+          </div>
+          <h2 style="color: #0d6efd;">New Course Submission Pending Approval</h2>
+          <p>Hi Admin,</p>
+          <p>The instructor <strong>${user?.user_metadata?.username || user?.email || 'A user'}</strong> has submitted their course <strong>"${course.title}"</strong> for review.</p>
+          <p>Please log in to the FHHF Admin Dashboard to review the curriculum, preview the content, and either approve or reject the submission.</p>
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="https://admin.fhhf.com/dashboard/course-moderation" style="background-color: #0d6efd; color: #fff; padding: 12px 24px; text-decoration: none; border-radius: 5px; font-weight: bold;">Go to Moderation Queue</a>
+          </div>
+          <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;" />
+          <p style="font-size: 12px; color: #888;">Automated Notification via FHHF LMS</p>
+        </div>
+      `;
+
+      const response = await axios.post(`${SUPABASE_URL}/functions/v1/send-email`, {
+        to: EMAIL_CONFIG.ADMIN_EMAIL,
+        subject: `New Course Pending Review: ${course.title}`,
+        html: emailHtml,
+        from_email: EMAIL_CONFIG.FROM_EMAIL,
+        from_name: EMAIL_CONFIG.FROM_NAME
+      }, {
+        headers: {
+          'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+        }
+      });
+
+      if (response.data?.error) {
+        console.error("Email notification failed to send:", response.data.error);
+      }
 
       dispatch(addAlert({
         title: 'Course Submitted!',
@@ -104,7 +144,7 @@ export default function CourseReviewStep({ course, onPrev }) {
             </ListGroup>
           </Col>
           <Col md={4}>
-            <div 
+            <div
               className="p-4 rounded-3 border border-primary border-opacity-25 h-100 d-flex flex-column justify-content-center"
               style={{ backgroundColor: 'rgba(0, 31, 84, 0.05)' }}
             >
@@ -131,7 +171,7 @@ export default function CourseReviewStep({ course, onPrev }) {
           </Col>
         </Row>
 
-        <div className="d-flex justify-content-between border-top pt-4">
+        <div className="d-flex flex-wrap gap-2 justify-content-between border-top pt-4">
           <Button variant="light" onClick={onPrev} className="rounded-pill px-5 py-2 fw-bold text-muted">
             Back to Pricing
           </Button>

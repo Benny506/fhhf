@@ -21,14 +21,15 @@ export default function CourseSettingsStep({ course, setCourse, onNext, onPrev }
     try {
       const { data, error } = await supabase
         .from('fhhf_courses')
-        .update({ 
-          is_free: isFree, 
-          price: isFree ? 0 : parseFloat(price) 
+        .update({
+          is_free: isFree,
+          price: isFree ? 0 : parseFloat(price),
+          status: 'draft'
         })
         .eq('id', course.id)
         .select()
         .single();
-        
+
       if (error) throw error;
       setCourse(data);
       onNext();
@@ -45,17 +46,17 @@ export default function CourseSettingsStep({ course, setCourse, onNext, onPrev }
       <Card.Body className="p-4 p-md-5">
         <h5 className="fw-bold text-primary mb-4">Pricing & Settings</h5>
         <Form onSubmit={handleSaveAndContinue}>
-          
+
           <Form.Group className="mb-5">
             <Form.Label className="fw-bold text-dark mb-3">Course Pricing Strategy</Form.Label>
-            
-            <div 
-              className={`p-3 rounded-3 border mb-3 cursor-pointer transition-all ${isFree ? 'border-primary' : ''}`} 
+
+            <div
+              className={`p-3 rounded-3 border mb-3 cursor-pointer transition-all ${isFree ? 'border-primary' : ''}`}
               onClick={() => setIsFree(true)}
               style={{ backgroundColor: isFree ? 'rgba(0, 31, 84, 0.05)' : 'transparent' }}
             >
-              <Form.Check 
-                type="radio" 
+              <Form.Check
+                type="radio"
                 id="price-free"
                 label={<span className="fw-bold">Free Course</span>}
                 checked={isFree}
@@ -64,31 +65,31 @@ export default function CourseSettingsStep({ course, setCourse, onNext, onPrev }
               <div className="text-muted small ms-4">Anyone can enroll and access the contents for free.</div>
             </div>
 
-            <div 
-              className={`p-3 rounded-3 border transition-all ${!isFree ? 'border-primary' : ''}`} 
+            <div
+              className={`p-3 rounded-3 border transition-all ${!isFree ? 'border-primary' : ''}`}
               onClick={() => setIsFree(false)}
               style={{ backgroundColor: !isFree ? 'rgba(0, 31, 84, 0.05)' : 'transparent' }}
             >
-              <Form.Check 
-                type="radio" 
+              <Form.Check
+                type="radio"
                 id="price-paid"
                 label={<span className="fw-bold">Paid Course</span>}
                 checked={!isFree}
                 onChange={() => setIsFree(false)}
               />
               <div className="text-muted small ms-4 mb-3">Require payment before students can access the curriculum.</div>
-              
+
               {!isFree && (
                 <div className="ms-4">
                   <Form.Label className="fw-bold small text-muted text-uppercase tracking-widest">Price Amount</Form.Label>
                   <InputGroup style={{ maxWidth: '200px' }}>
                     <InputGroup.Text className="bg-white border-end-0 fw-bold">₦</InputGroup.Text>
-                    <Form.Control 
-                      type="number" 
+                    <Form.Control
+                      type="number"
                       min="1"
                       step="0.01"
-                      className="bg-white border-start-0 py-2 px-3" 
-                      placeholder="99.99" 
+                      className="bg-white border-start-0 py-2 px-3"
+                      placeholder="99.99"
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
                       required={!isFree}
@@ -100,7 +101,7 @@ export default function CourseSettingsStep({ course, setCourse, onNext, onPrev }
             </div>
           </Form.Group>
 
-          <div className="d-flex justify-content-between border-top pt-4 mt-4">
+          <div className="d-flex flex-wrap gap-2 justify-content-between border-top pt-4 mt-4">
             <Button variant="light" onClick={onPrev} className="rounded-pill px-5 py-2 fw-bold text-muted">
               Back
             </Button>

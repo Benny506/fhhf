@@ -22,8 +22,8 @@ export const authBootstrapper = async (dispatch) => {
     if (profileError || !userProfile) {
       // Profile doesn't exist yet, we don't automatically sign out here because 
       // they might have just registered and the trigger hasn't fired or we need to complete registration.
-      // But for a mirrored experience, if no profile exists, they aren't fully registered on FHHF.
-      await supabase.auth.signOut();
+      // We clear the local redux auth state so the app knows they aren't fully authorized yet,
+      // but we leave the supabase session active so they can create their profile.
       dispatch(clearAuth());
       return { success: false, reason: 'no_profile' };
     }

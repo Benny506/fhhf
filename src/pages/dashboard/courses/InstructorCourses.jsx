@@ -5,6 +5,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { setTopbarConfig, showSubtleLoader, hideSubtleLoader, addAlert, showConfirmModal } from '../../../redux/slices/uiSlice';
 import { setInstructorCourses, removeCourseLocally } from '../../../redux/slices/courseSlice';
 import supabase from '../../../utils/supabase';
+import CourseCard from '../../../components/ui/CourseCard';
 import { BsPlusLg, BsPencilSquare, BsTrash, BsJournalRichtext } from 'react-icons/bs';
 
 export default function InstructorCourses() {
@@ -22,11 +23,11 @@ export default function InstructorCourses() {
   }, [dispatch]);
 
   useEffect(() => {
-    // Only fetch if we haven't fetched yet
-    if (courses === null && user?.id) {
+    if (user?.id) {
       fetchCourses();
     }
-  }, [user?.id, courses]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const fetchCourses = async () => {
     dispatch(showSubtleLoader('Fetching your courses...'));
@@ -71,10 +72,13 @@ export default function InstructorCourses() {
     }));
   };
 
-  const getStatusBadge = (status) => {
-    switch(status) {
+  const getStatusBadge = (course) => {
+    switch(course.status) {
       case 'published': return <Badge bg="success" className="rounded-pill">Published</Badge>;
       case 'pending_approval': return <Badge bg="info" className="rounded-pill">Pending Approval</Badge>;
+      case 'draft':
+        if (course.rejection_reason) return <Badge bg="danger" className="rounded-pill shadow-sm">Needs Revision</Badge>;
+        return <Badge bg="warning" text="dark" className="rounded-pill">Draft</Badge>;
       default: return <Badge bg="warning" text="dark" className="rounded-pill">Draft</Badge>;
     }
   };
@@ -105,50 +109,44 @@ export default function InstructorCourses() {
         <Row className="g-4">
           {courses.map(course => (
             <Col xs={12} md={6} xl={4} key={course.id}>
-              <Card className="h-100 border-0 shadow-sm rounded-4 overflow-hidden position-relative hover-lift transition-all">
-                {course.thumbnail_url ? (
-                  <div 
-                    style={{ 
-                      height: '180px', 
-                      backgroundImage: `url(${course.thumbnail_url})`, 
-                      backgroundSize: 'cover', 
-                      backgroundPosition: 'center' 
-                    }} 
-                  />
-                ) : (
-                  <div className="bg-light d-flex align-items-center justify-content-center" style={{ height: '180px' }}>
-                    <BsJournalRichtext size={48} className="text-muted opacity-25" />
-                  </div>
+              <CourseCard 
+                course={course}
+                onViewCourse={() => navigate(`/courses/${course.id}`)}
+                renderBadges={(c) => getStatusBadge(c)}
+                renderMetadata={(c) => (
+                  <>
+                    <p className="small text-muted mb-3 fw-medium text-uppercase tracking-widest">
+                      {c.is_free ? 'Free Course' : `₦${c.price?.toLocaleString()}`}
+                    </p>
+                    {c.status === 'draft' && c.rejection_reason && (
+                      <div className="text-danger p-2 mb-3 rounded-3 small w-100" style={{ backgroundColor: 'rgba(220, 53, 69, 0.1)' }}>
+                        <div className="fw-bold mb-1" style={{ fontSize: '0.8rem' }}>ADMIN FEEDBACK:</div>
+                        <div style={{ fontSize: '0.85rem' }} className="line-clamp-2" title={c.rejection_reason}>
+                          {c.rejection_reason}
+                        </div>
+                      </div>
+                    )}
+                  </>
                 )}
-                
-                <div className="position-absolute top-0 end-0 m-3">
-                  {getStatusBadge(course.status)}
-                </div>
-
-                <Card.Body className="p-4 d-flex flex-column">
-                  <h6 className="fw-bold mb-2 text-dark line-clamp-2" style={{ height: '40px' }}>{course.title}</h6>
-                  <p className="small text-muted mb-4 fw-medium text-uppercase tracking-widest">
-                    {course.is_free ? 'Free Course' : `₦${course.price?.toLocaleString()}`}
-                  </p>
-                  
-                  <div className="mt-auto d-flex gap-2">
+                renderActions={(c) => (
+                  <div className="d-flex gap-2 w-100">
                     <Button 
                       variant="light" 
                       className="flex-grow-1 fw-bold rounded-pill text-primary border-primary border-opacity-25"
-                      onClick={() => navigate(`/dashboard/courses/builder/${course.id}`)}
+                      onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/courses/builder/${c.id}`); }}
                     >
                       <BsPencilSquare className="me-2" /> Edit
                     </Button>
                     <Button 
                       variant="light" 
                       className="rounded-pill text-danger border-danger border-opacity-25 px-3"
-                      onClick={() => handleDelete(course.id, course.title)}
+                      onClick={(e) => { e.stopPropagation(); handleDelete(c.id, c.title); }}
                     >
                       <BsTrash />
                     </Button>
                   </div>
-                </Card.Body>
-              </Card>
+                )}
+              />
             </Col>
           ))}
         </Row>

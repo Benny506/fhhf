@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useSearchParams, useNavigate } from 'react-router-dom';
 import { useDispatch } from 'react-redux';
-import { setTopbarConfig } from '../../../redux/slices/uiSlice';
+import { setTopbarConfig, showSubtleLoader, hideSubtleLoader } from '../../../redux/slices/uiSlice';
 import supabase from '../../../utils/supabase';
-import { Container, Row, Col } from 'react-bootstrap';
+import { Container, Row, Col, Spinner, Alert } from 'react-bootstrap';
+import { BsExclamationTriangleFill } from 'react-icons/bs';
 
 import CourseBasicsStep from './steps/CourseBasicsStep';
 import CourseCurriculumStep from './steps/CourseCurriculumStep';
@@ -34,6 +35,7 @@ export default function CreateCourseWizard() {
         return;
       }
       
+      dispatch(showSubtleLoader('Loading course...'));
       try {
         const { data, error } = await supabase
           .from('fhhf_courses')
@@ -47,11 +49,12 @@ export default function CreateCourseWizard() {
         console.error('Failed to load course:', err);
       } finally {
         setIsLoading(false);
+        dispatch(hideSubtleLoader());
       }
     };
 
     fetchCourse();
-  }, [courseId]);
+  }, [courseId, dispatch]);
 
   const handleNextStep = (newCourseId) => {
     if (newCourseId && !courseId) {
@@ -62,12 +65,27 @@ export default function CreateCourseWizard() {
     }
   };
 
-  if (isLoading) return null; 
+  if (isLoading) {
+    return (
+      <Container className="d-flex justify-content-center align-items-center" style={{ minHeight: '60vh' }}>
+        <Spinner animation="border" variant="primary" />
+      </Container>
+    );
+  }
 
   return (
     <Container fluid className="px-0 py-4">
       <Row className="justify-content-center">
         <Col xs={12} lg={10} xl={8}>
+          {course && course.status === 'draft' && currentStep !== 4 && (
+            <Alert variant="warning" className="d-flex align-items-center gap-3 rounded-4 shadow-sm mb-4">
+              <BsExclamationTriangleFill size={24} className="flex-shrink-0" />
+              <div>
+                <strong>Draft Mode:</strong> Your course is currently in draft state. Any changes made will be saved as a draft. Remember to go to Step 4 to submit it for approval!
+              </div>
+            </Alert>
+          )}
+
           <div className="mb-4 d-flex justify-content-between align-items-center">
             <h4 className="fw-bold text-primary mb-0">Step {currentStep} of 4</h4>
           </div>
@@ -79,6 +97,7 @@ export default function CreateCourseWizard() {
             {currentStep === 2 && (
               <CourseCurriculumStep 
                 course={course} 
+                setCourse={setCourse}
                 onNext={() => setSearchParams({ step: '3' })} 
                 onPrev={() => setSearchParams({ step: '1' })} 
               />

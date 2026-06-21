@@ -6,29 +6,29 @@ import supabase from '../../../../utils/supabase';
 import { BsPlusCircle } from 'react-icons/bs';
 import ModuleAccordion from '../components/ModuleAccordion';
 
-export default function CourseCurriculumStep({ course, onNext, onPrev }) {
+export default function CourseCurriculumStep({ course, setCourse, onNext, onPrev }) {
   const dispatch = useDispatch();
   const [modules, setModules] = useState([]);
   const [lessons, setLessons] = useState([]);
-  
+
   const fetchCurriculum = useCallback(async () => {
     if (!course?.id) return;
-    
+
     try {
       const { data: mods, error: errMods } = await supabase
         .from('fhhf_course_modules')
         .select('*')
         .eq('course_id', course.id)
         .order('order_index', { ascending: true });
-        
+
       if (errMods) throw errMods;
-      
+
       const { data: less, error: errLess } = await supabase
         .from('fhhf_course_lessons')
         .select('*')
         .in('module_id', mods.length > 0 ? mods.map(m => m.id) : [course.id]) // Just needs an array
         .order('order_index', { ascending: true });
-        
+
       if (errLess && mods.length > 0) throw errLess;
 
       setModules(mods);
@@ -43,6 +43,17 @@ export default function CourseCurriculumStep({ course, onNext, onPrev }) {
     fetchCurriculum();
   }, [fetchCurriculum]);
 
+  const handleRevertToDraft = async () => {
+    if (course?.status !== 'draft') {
+      try {
+        const { data } = await supabase.from('fhhf_courses').update({ status: 'draft' }).eq('id', course.id).select().single();
+        if (data && setCourse) setCourse(data);
+      } catch (err) {
+        console.error("Failed to revert to draft:", err);
+      }
+    }
+  };
+
   const handleAddModule = async () => {
     dispatch(showSubtleLoader('Adding module...'));
     try {
@@ -54,8 +65,9 @@ export default function CourseCurriculumStep({ course, onNext, onPrev }) {
           title: `Module ${newOrder + 1}: New Topic`,
           order_index: newOrder
         });
-      
+
       if (error) throw error;
+      await handleRevertToDraft();
       await fetchCurriculum();
     } catch (err) {
       console.error(err);
@@ -93,16 +105,19 @@ export default function CourseCurriculumStep({ course, onNext, onPrev }) {
             {modules.map((mod, index) => {
               const modLessons = lessons.filter(l => l.module_id === mod.id);
               return (
-                <ModuleAccordion 
-                  key={mod.id} 
-                  module={mod} 
-                  lessons={modLessons} 
-                  onRefresh={fetchCurriculum}
+                <ModuleAccordion
+                  key={mod.id}
+                  module={mod}
+                  lessons={modLessons}
+                  onRefresh={async () => {
+                    await handleRevertToDraft();
+                    await fetchCurriculum();
+                  }}
                   index={index}
                 />
               );
             })}
-            
+
             <div className="mt-3">
               <Button variant="outline-primary" onClick={handleAddModule} className="rounded-pill px-4 fw-bold w-100 py-3" style={{ borderStyle: 'dashed', borderWidth: '2px' }}>
                 <BsPlusCircle className="me-2" /> Add New Module
@@ -111,7 +126,7 @@ export default function CourseCurriculumStep({ course, onNext, onPrev }) {
           </div>
         )}
 
-        <div className="d-flex justify-content-between border-top pt-4 mt-4">
+        <div className="d-flex flex-wrap gap-2 justify-content-between border-top pt-4 mt-4">
           <Button variant="light" onClick={onPrev} className="rounded-pill px-5 py-2 fw-bold text-muted">
             Back
           </Button>

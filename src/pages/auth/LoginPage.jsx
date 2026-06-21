@@ -33,7 +33,11 @@ export default function LoginPage() {
 
       const bootRes = await authBootstrapper(dispatch);
       if (!bootRes.success) {
-        throw new Error(bootRes.reason === 'no_profile' ? "User profile not found. Please contact support." : "Failed to establish a secure session.");
+        if (bootRes.reason === 'no_profile') {
+          navigate('/complete-profile');
+          return;
+        }
+        throw new Error("Failed to establish a secure session.");
       }
 
       dispatch(addAlert({ title: 'Welcome Back!', message: 'Signed in successfully.', variant: 'success' }));

@@ -32,11 +32,15 @@ export default function Topbar({ onToggleSidebar, isMobile }) {
       
       <div className="d-flex align-items-center">
         <div 
-          className="rounded-circle d-flex align-items-center justify-content-center border shadow-sm" 
-          style={{ width: '40px', height: '40px', backgroundColor: 'var(--color-secondary)', color: 'var(--color-primary)' }}
+          className="rounded-circle d-flex align-items-center justify-content-center shadow-sm overflow-hidden" 
+          style={{ width: '40px', height: '40px', backgroundColor: 'var(--color-secondary)', color: 'var(--color-primary)', border: '2px solid white' }}
           title={profile?.username || 'User Profile'}
         >
-          <span className="fw-bold">{initial}</span>
+          {profile?.profile_img ? (
+            <img src={profile.profile_img} alt="Profile" className="w-100 h-100 object-fit-cover" />
+          ) : (
+            <span className="fw-bold">{initial}</span>
+          )}
         </div>
       </div>
     </header>
