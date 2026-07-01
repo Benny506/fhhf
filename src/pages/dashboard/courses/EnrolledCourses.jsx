@@ -81,10 +81,13 @@ export default function EnrolledCourses() {
             const course = enrollment.course;
             // Prevent crash if course was deleted after enrollment
             if (!course) return null;
-
             const totalLessons = course.modules?.flatMap(m => m.lessons)?.length || 0;
             const completedLessons = enrollment.progress?.length || 0;
-            const progressPercentage = totalLessons > 0 ? Math.round((completedLessons / totalLessons) * 100) : 0;
+            const isCompleted = enrollment.status === 'completed';
+            const progressPercentage = isCompleted ? 100 : (enrollment.progress_percentage || 0);
+            
+            // Check if there is new content added since they completed it
+            const hasNewContent = isCompleted && (completedLessons < totalLessons);
 
             return (
               <Col xs={12} md={6} xl={4} key={enrollment.id}>
@@ -94,7 +97,9 @@ export default function EnrolledCourses() {
                   renderMetadata={() => (
                     <div className="mb-3">
                       <div className="d-flex justify-content-between align-items-center mb-1">
-                        <span className="small fw-bold text-dark">{progressPercentage}% Complete</span>
+                        <span className="small fw-bold text-dark">
+                          {progressPercentage}% Complete {hasNewContent && <span className="text-primary ms-1">✨ New Content</span>}
+                        </span>
                       </div>
                       <ProgressBar
                         variant="success"
@@ -106,14 +111,14 @@ export default function EnrolledCourses() {
                   )}
                   renderActions={() => (
                     <Button
-                      variant="primary"
+                      variant={isCompleted ? "outline-primary" : "primary"}
                       className="w-100 fw-bold rounded-pill d-flex align-items-center justify-content-center gap-2"
                       onClick={(e) => {
                         e.stopPropagation();
                         navigate(`/learn/${course.id}`);
                       }}
                     >
-                      <BsPlayCircle /> Continue Learning
+                      <BsPlayCircle /> {isCompleted ? 'Review Course' : 'Continue Learning'}
                     </Button>
                   )}
                 />

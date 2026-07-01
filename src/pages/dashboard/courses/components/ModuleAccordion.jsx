@@ -5,6 +5,7 @@ import { useDispatch } from 'react-redux';
 import { showSubtleLoader, hideSubtleLoader, addAlert, showConfirmModal } from '../../../../redux/slices/uiSlice';
 import supabase from '../../../../utils/supabase';
 import LessonBuilderModal from './LessonBuilderModal';
+import ModuleSettings from './ModuleSettings';
 
 export default function ModuleAccordion({ module, lessons, onRefresh, index }) {
   const dispatch = useDispatch();
@@ -139,6 +140,7 @@ export default function ModuleAccordion({ module, lessons, onRefresh, index }) {
       {/* Body / Lessons List */}
       <Collapse in={isOpen}>
         <div>
+          <ModuleSettings module={module} onRefresh={onRefresh} />
           <Card.Body className="p-0">
             {lessons.length === 0 ? (
               <div className="p-4 text-center text-muted small">

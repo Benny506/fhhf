@@ -5,7 +5,8 @@ const initialState = {
   data: {
     home: null,
     about: null,
-    contact: null
+    contact: null,
+    donate: null
   }
 };
 
@@ -15,7 +16,7 @@ const siteContentSlice = createSlice({
   reducers: {
     setSiteContent: (state, action) => {
       // action.payload will be the array of rows from db
-      const contentMap = { home: {}, about: {}, contact: {} };
+      const contentMap = { home: {}, about: {}, contact: {}, donate: {} };
       
       action.payload.forEach(row => {
         const { page_name, section_key, content } = row;

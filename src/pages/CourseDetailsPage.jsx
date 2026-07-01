@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { Container, Row, Col, Badge, Button, Card, Accordion } from 'react-bootstrap';
-import { BsCheckCircleFill, BsPlayCircle, BsChevronRight, BsClock, BsPersonVideo, BsFileText, BsAward, BsGlobe, BsPlayCircleFill, BsPencilSquare, BsHourglassSplit, BsExclamationCircle } from 'react-icons/bs';
+import { BsCheckCircleFill, BsPlayCircle, BsChevronRight, BsClock, BsPersonVideo, BsFileText, BsAward, BsGlobe, BsPlayCircleFill, BsPencilSquare, BsHourglassSplit, BsExclamationCircle, BsPerson, BsCameraVideo, BsImage } from 'react-icons/bs';
 import { useDispatch, useSelector } from 'react-redux';
 import { showSubtleLoader, hideSubtleLoader, addAlert, showAppLoader, hideAppLoader } from '../redux/slices/uiSlice';
 import supabase from '../utils/supabase';
@@ -112,6 +112,26 @@ export default function CourseDetailsPage() {
 
   const isPublished = course.status === 'published';
 
+  // Aggregate all unique contributors from modules
+  const allContributors = [];
+  if (course.modules) {
+    course.modules.forEach(module => {
+      if (module.contributors && module.contributors.length > 0) {
+        module.contributors.forEach(contrib => {
+          const existing = allContributors.find(c => c.name === contrib.name && c.role === contrib.role);
+          if (existing) {
+            existing.modules.push(module.title);
+          } else {
+            allContributors.push({
+              ...contrib,
+              modules: [module.title]
+            });
+          }
+        });
+      }
+    });
+  }
+
   if (!isPublished) {
     return (
       <div className="bg-light pb-5" style={{ minHeight: '100vh', paddingTop: '100px' }}>
@@ -136,10 +156,10 @@ export default function CourseDetailsPage() {
               {course.status === 'draft' ? 'Course Under Construction' : course.status === 'pending_approval' ? 'Awaiting Approval' : 'Course Unavailable'}
             </h2>
             <p className="text-muted mb-0" style={{ fontSize: '1.1rem' }}>
-              {course.status === 'draft' 
-                ? 'This course is currently being edited by the instructor and is not yet available to the public.' 
-                : course.status === 'pending_approval' 
-                  ? 'This course has been submitted and is currently under review by our moderation team.' 
+              {course.status === 'draft'
+                ? 'This course is currently being edited by the instructor and is not yet available to the public.'
+                : course.status === 'pending_approval'
+                  ? 'This course has been submitted and is currently under review by our moderation team.'
                   : 'This course has been removed or is currently unavailable.'}
             </p>
           </Card>
@@ -174,7 +194,7 @@ export default function CourseDetailsPage() {
                 <span>{course.category || 'Uncategorized'}</span>
               </div>
 
-              <h1 className="display-4 fw-bold mb-4" style={{ fontFamily: 'var(--font-family-heading)' }}>
+              <h1 className="display-4 fw-bold mb-4 text-light" style={{ fontFamily: 'var(--font-family-heading)' }}>
                 {course.title}
               </h1>
 
@@ -228,11 +248,11 @@ export default function CourseDetailsPage() {
             {/* Mobile Media Preview (Only visible on screens smaller than lg) */}
             <div className="d-lg-none mb-5 rounded-4 overflow-hidden shadow-sm bg-dark" style={{ height: '240px' }}>
               {course.thumbnail_url ? (
-                <video 
-                  src={course.thumbnail_url} 
-                  className="w-100 h-100 object-fit-contain" 
-                  controls 
-                  controlsList="nodownload" 
+                <video
+                  src={course.thumbnail_url}
+                  className="w-100 h-100 object-fit-contain"
+                  controls
+                  controlsList="nodownload"
                 />
               ) : course.thumbnail_image ? (
                 <img src={course.thumbnail_image} className="w-100 h-100 object-fit-cover" alt="Course Preview" />
@@ -306,6 +326,66 @@ export default function CourseDetailsPage() {
                         </div>
                       </Accordion.Header>
                       <Accordion.Body className="p-0 bg-light">
+                        {/* Module Enhancements: Contributors & Preview Media */}
+                        {(module.contributors?.length > 0 || (module.preview_media && (module.preview_media.video_url || module.preview_media.images?.length > 0))) && (
+                          <div className="bg-white border-bottom p-4">
+                            <div className="row g-4">
+                              {/* Contributors */}
+                              {module.contributors?.length > 0 && (
+                                <div className="col-md-6 border-md-end pe-md-4">
+                                  <div className="d-flex align-items-center mb-3">
+                                    <BsPerson className="text-primary me-2" size={18} />
+                                    <strong className="text-dark small text-uppercase tracking-widest">Instructors / Contributors</strong>
+                                  </div>
+                                  <div className="d-flex flex-column gap-3">
+                                    {module.contributors.map((contrib, cIdx) => (
+                                      <div key={cIdx} className="d-flex align-items-start gap-3">
+                                        {contrib.profile_image_url ? (
+                                          <img src={contrib.profile_image_url} alt={contrib.name} className="rounded-circle shadow-sm" style={{ width: 40, height: 40, objectFit: 'cover' }} />
+                                        ) : (
+                                          <div className="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm" style={{ width: 40, height: 40, fontSize: '16px' }}>
+                                            {contrib.name.charAt(0)}
+                                          </div>
+                                        )}
+                                        <div>
+                                          <div className="fw-bold text-dark">{contrib.name} <Badge bg="light" text="dark" className="border fw-normal ms-1" style={{ fontSize: '11px' }}>{contrib.role}</Badge></div>
+                                          {contrib.description && <div className="text-muted small mt-1 lh-sm">{contrib.description}</div>}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+
+                              {/* Preview Media */}
+                              {(module.preview_media?.video_url || module.preview_media?.images?.length > 0) && (
+                                <div className="col-md-6 ps-md-4">
+                                  <div className="d-flex align-items-center mb-3">
+                                    {module.preview_media.video_url ? <BsCameraVideo className="text-danger me-2" size={18} /> : <BsImage className="text-success me-2" size={18} />}
+                                    <strong className="text-dark small text-uppercase tracking-widest">Module Outcomes</strong>
+                                  </div>
+                                  {module.preview_media.video_url ? (
+                                    <div className="ratio ratio-16x9 rounded-3 overflow-hidden shadow-sm bg-dark">
+                                      <video controls controlsList="nodownload">
+                                        <source src={module.preview_media.video_url} />
+                                        Your browser does not support HTML video.
+                                      </video>
+                                    </div>
+                                  ) : (
+                                    <div className="d-flex flex-wrap gap-2">
+                                      {module.preview_media.images?.map((img, iIdx) => (
+                                        <a href={img} target="_blank" rel="noreferrer" key={iIdx} className="d-block overflow-hidden rounded-3 shadow-sm" style={{ width: '80px', height: '80px' }}>
+                                          <img src={img} alt="Preview" className="w-100 h-100 object-fit-cover hover-scale transition-all" />
+                                        </a>
+                                      ))}
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        )}
+
                         {module.lessons?.length > 0 ? (
                           <div className="list-group list-group-flush">
                             {module.lessons.map(lesson => (
@@ -358,6 +438,42 @@ export default function CourseDetailsPage() {
                     </div>
                   </div>
                 </Card>
+
+                {allContributors.length > 0 && (
+                  <div className="mt-5">
+                    <h4 className="fw-bold mb-4" style={{ fontFamily: 'var(--font-family-heading)' }}>Module Contributors</h4>
+                    <Row className="g-4">
+                      {allContributors.map((contrib, idx) => (
+                        <Col md={6} key={idx}>
+                          <Card className="border-0 shadow-sm rounded-4 p-4 bg-white h-100 d-flex flex-column hover-scale transition-all">
+                            <div className="d-flex align-items-center gap-3 mb-3">
+                              {contrib.profile_image_url ? (
+                                <img src={contrib.profile_image_url} alt={contrib.name} className="rounded-circle shadow-sm flex-shrink-0" style={{ width: 60, height: 60, objectFit: 'cover' }} />
+                              ) : (
+                                <div className="bg-secondary rounded-circle d-flex align-items-center justify-content-center text-white shadow-sm flex-shrink-0" style={{ width: 60, height: 60, fontSize: '24px' }}>
+                                  {contrib.name.charAt(0)}
+                                </div>
+                              )}
+                              <div>
+                                <h6 className="fw-bold text-dark mb-1">{contrib.name}</h6>
+                                <Badge bg="light" text="dark" className="border fw-normal">{contrib.role}</Badge>
+                              </div>
+                            </div>
+                            {contrib.description && <p className="text-muted small mb-3 flex-grow-1">{contrib.description}</p>}
+                            <div className="mt-auto pt-3 border-top">
+                              <div className="small text-muted fw-bold mb-2 tracking-widest text-uppercase" style={{ fontSize: '10px' }}>Contributed to</div>
+                              <div className="d-flex flex-wrap gap-2">
+                                {contrib.modules.map((modTitle, mIdx) => (
+                                  <Badge bg="none" className="text-primary rounded-pill border border-primary border-opacity-25 fw-normal text-truncate" style={{ backgroundColor: 'rgba(13, 110, 253, 0.1)', maxWidth: '100%' }} key={mIdx}>{modTitle}</Badge>
+                                ))}
+                              </div>
+                            </div>
+                          </Card>
+                        </Col>
+                      ))}
+                    </Row>
+                  </div>
+                )}
               </div>
             )}
 
@@ -369,11 +485,11 @@ export default function CourseDetailsPage() {
               <Card className="border-0 shadow-lg rounded-4 overflow-hidden bg-white">
                 <div className="position-relative bg-dark" style={{ height: '220px' }}>
                   {course.thumbnail_url ? (
-                    <video 
-                      src={course.thumbnail_url} 
-                      className="w-100 h-100 object-fit-contain" 
-                      controls 
-                      controlsList="nodownload" 
+                    <video
+                      src={course.thumbnail_url}
+                      className="w-100 h-100 object-fit-contain"
+                      controls
+                      controlsList="nodownload"
                     />
                   ) : course.thumbnail_image ? (
                     <img src={course.thumbnail_image} className="w-100 h-100 object-fit-cover" alt="Course Preview" />
@@ -389,9 +505,9 @@ export default function CourseDetailsPage() {
                     {course.is_free ? 'Free' : `₦${course.price?.toLocaleString()}`}
                   </h2>
 
-                  <Button 
-                    variant="primary" 
-                    size="lg" 
+                  <Button
+                    variant="primary"
+                    size="lg"
                     className="w-100 rounded-pill fw-bold py-3 mb-3 shadow-sm hover-scale"
                     onClick={handleEnroll}
                     disabled={enrolling}
@@ -428,8 +544,8 @@ export default function CourseDetailsPage() {
           <div className="small text-muted fw-bold">Price</div>
           <div className="fw-bold text-dark fs-5">{course.is_free ? 'Free' : `₦${course.price?.toLocaleString()}`}</div>
         </div>
-        <Button 
-          variant="primary" 
+        <Button
+          variant="primary"
           className="rounded-pill px-5 fw-bold py-2 shadow-sm"
           onClick={handleEnroll}
           disabled={enrolling}

@@ -105,7 +105,7 @@ export default function CourseReviewStep({ course, onPrev }) {
         message: 'Your course has been submitted. Our team will review it shortly.',
         variant: 'success'
       }));
-      navigate('/dashboard', { replace: true });
+      navigate('/dashboard/courses', { replace: true });
     } catch (err) {
       console.error(err);
       dispatch(addAlert({ title: 'Submission Failed', message: err.message, variant: 'danger' }));

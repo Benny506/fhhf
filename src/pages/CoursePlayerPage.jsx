@@ -143,13 +143,24 @@ export default function CoursePlayerPage() {
       newCompleted.add(activeLesson.id);
       setCompletedLessons(newCompleted);
 
-      // Update progress_percentage quietly
-      const newProgress = Math.round((newCompleted.size / totalLessons) * 100);
-      supabase
-        .from('fhhf_user_enrollments')
-        .update({ progress_percentage: newProgress })
-        .eq('id', enrollment.id)
-        .then();
+      console.log(enrollment.status)
+
+      // Update progress_percentage and status quietly ONLY if not already completed
+      if (enrollment.status !== 'completed') {
+        const newProgress = Math.round((newCompleted.size / totalLessons) * 100);
+        const newStatus = newProgress === 100 ? 'completed' : 'in_progress';
+
+        await supabase
+          .from('fhhf_user_enrollments')
+          .update({
+            progress_percentage: newProgress,
+            ...(newProgress === 100 && { status: 'completed' })
+          })
+          .eq('id', enrollment.id)
+
+        // Update local enrollment state to prevent immediate re-runs from causing issues
+        setEnrollment(prev => ({ ...prev, status: newStatus, progress_percentage: newProgress }));
+      }
 
       // Auto-advance
       const currentIndex = allLessons.findIndex(l => l.id === activeLesson.id);
@@ -157,7 +168,6 @@ export default function CoursePlayerPage() {
         handleLessonSelect(allLessons[currentIndex + 1]);
       } else {
         dispatch(addAlert({ variant: 'success', message: 'Congratulations! You have finished the course.' }));
-        // Could update enrollment status to 'completed' here
       }
     } catch (err) {
       console.error(err);
@@ -188,15 +198,15 @@ export default function CoursePlayerPage() {
   const isCompleted = completedLessons.has(activeLesson.id);
 
   return (
-    <CoursePlayerLayout 
-      course={course} 
+    <CoursePlayerLayout
+      course={course}
       progressPercentage={progressPercentage}
       sidebar={
-        <CoursePlayerSidebar 
-          modules={modules} 
-          activeLesson={activeLesson} 
-          completedLessons={completedLessons} 
-          onLessonSelect={handleLessonSelect} 
+        <CoursePlayerSidebar
+          modules={modules}
+          activeLesson={activeLesson}
+          completedLessons={completedLessons}
+          onLessonSelect={handleLessonSelect}
         />
       }
     >

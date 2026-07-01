@@ -14,7 +14,7 @@ export default function AppNavbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  
+
   const user = useSelector((state) => state.auth.user);
   const profile = useSelector((state) => state.auth.profile);
   const isAuthenticated = user && profile;
@@ -68,14 +68,14 @@ export default function AppNavbar() {
           {/* Right Nav & Actions (Desktop) */}
           <div className="d-none d-lg-flex align-items-center justify-content-end gap-5 flex-1">
             <NavLink to="/courses" className={({ isActive }) => `nav-link-editorial ${isActive ? 'active' : ''}`}>Courses</NavLink>
-            
+
             {isAuthenticated ? (
               <NavLink to="/dashboard" className={({ isActive }) => `nav-link-editorial ${isActive ? 'active' : ''}`}>Dashboard</NavLink>
             ) : (
               <NavLink to="/login" className={({ isActive }) => `nav-link-editorial ${isActive ? 'active' : ''}`}>Sign In</NavLink>
             )}
 
-            <Button variant="primary" className="editorial-btn shadow-sm">
+            <Button onClick={() => navigate('/donate')} variant="primary" className="editorial-btn shadow-sm">
               Donate
             </Button>
           </div>

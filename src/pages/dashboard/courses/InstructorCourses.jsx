@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Container, Row, Col, Card, Button, Badge } from 'react-bootstrap';
+import { Container, Row, Col, Card, Button, Badge, Tabs, Tab } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { setTopbarConfig, showSubtleLoader, hideSubtleLoader, addAlert, showConfirmModal } from '../../../redux/slices/uiSlice';
@@ -7,6 +7,7 @@ import { setInstructorCourses, removeCourseLocally } from '../../../redux/slices
 import supabase from '../../../utils/supabase';
 import CourseCard from '../../../components/ui/CourseCard';
 import { BsPlusLg, BsPencilSquare, BsTrash, BsJournalRichtext } from 'react-icons/bs';
+import InstructorGlobalAnalyticsTab from './InstructorGlobalAnalyticsTab';
 
 export default function InstructorCourses() {
   const dispatch = useDispatch();
@@ -95,7 +96,9 @@ export default function InstructorCourses() {
         </Button>
       </div>
 
-      {!courses ? null : courses.length === 0 ? (
+      <Tabs defaultActiveKey="courses" id="instructor-courses-tabs" className="mb-4 custom-tabs">
+        <Tab eventKey="courses" title="My Courses">
+          {!courses ? null : courses.length === 0 ? (
         <Card className="border-0 shadow-sm rounded-4 text-center p-5">
           <Card.Body className="py-5 my-3">
             <BsJournalRichtext size={64} className="text-muted mb-4 opacity-50" />
@@ -129,21 +132,30 @@ export default function InstructorCourses() {
                   </>
                 )}
                 renderActions={(c) => (
-                  <div className="d-flex gap-2 w-100">
+                  <div className="d-flex flex-column gap-2 w-100">
                     <Button 
-                      variant="light" 
-                      className="flex-grow-1 fw-bold rounded-pill text-primary border-primary border-opacity-25"
-                      onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/courses/builder/${c.id}`); }}
+                      variant="outline-secondary" 
+                      className="w-100 fw-bold rounded-pill shadow-sm"
+                      onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/courses/${c.id}/analytics`); }}
                     >
-                      <BsPencilSquare className="me-2" /> Edit
+                      Analytics
                     </Button>
-                    <Button 
-                      variant="light" 
-                      className="rounded-pill text-danger border-danger border-opacity-25 px-3"
-                      onClick={(e) => { e.stopPropagation(); handleDelete(c.id, c.title); }}
-                    >
-                      <BsTrash />
-                    </Button>
+                    <div className="d-flex gap-2 w-100">
+                      <Button 
+                        variant="light" 
+                        className="flex-grow-1 fw-bold rounded-pill text-primary border-primary border-opacity-25"
+                        onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/courses/builder/${c.id}`); }}
+                      >
+                        <BsPencilSquare className="me-2" /> Edit
+                      </Button>
+                      <Button 
+                        variant="light" 
+                        className="rounded-pill text-danger border-danger border-opacity-25 px-3"
+                        onClick={(e) => { e.stopPropagation(); handleDelete(c.id, c.title); }}
+                      >
+                        <BsTrash />
+                      </Button>
+                    </div>
                   </div>
                 )}
               />
@@ -151,6 +163,11 @@ export default function InstructorCourses() {
           ))}
         </Row>
       )}
+        </Tab>
+        <Tab eventKey="analytics" title="Global Analytics">
+          <InstructorGlobalAnalyticsTab user={user} />
+        </Tab>
+      </Tabs>
 
       <style>{`
         .hover-lift:hover {
@@ -162,6 +179,18 @@ export default function InstructorCourses() {
           -webkit-line-clamp: 2;
           -webkit-box-orient: vertical;  
           overflow: hidden;
+        }
+        .custom-tabs .nav-link {
+          color: #6c757d;
+          font-weight: 600;
+          border: none;
+          border-bottom: 2px solid transparent;
+          padding: 0.75rem 1.5rem;
+        }
+        .custom-tabs .nav-link.active {
+          color: #0d6efd;
+          background: transparent;
+          border-bottom: 2px solid #0d6efd;
         }
       `}</style>
     </Container>

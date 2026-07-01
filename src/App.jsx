@@ -12,6 +12,7 @@ import ScrollToTop from './components/layout/ScrollToTop';
 import HomePage from './pages/HomePage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
+import DonatePage from './pages/DonatePage';
 
 // Dashboard Pages
 import ProtectedRoute from './components/auth/ProtectedRoute';
@@ -21,6 +22,7 @@ import UserSettings from './pages/dashboard/UserSettings';
 import InstructorCourses from './pages/dashboard/courses/InstructorCourses';
 import CreateCourseWizard from './pages/dashboard/courses/CreateCourseWizard';
 import EnrolledCourses from './pages/dashboard/courses/EnrolledCourses';
+import InstructorCourseAnalyticsPage from './pages/dashboard/courses/InstructorCourseAnalyticsPage';
 
 // Auth Pages
 import AuthProvider from './components/auth/AuthProvider';
@@ -55,6 +57,7 @@ function App() {
                 <Route path="/" element={<HomePage />} />
                 <Route path="/about" element={<AboutPage />} />
                 <Route path="/contact" element={<ContactPage />} />
+                <Route path="/donate" element={<DonatePage />} />
                 <Route path="/courses" element={<CoursesPage />} />
                 <Route path="/courses/:courseId" element={<CourseDetailsPage />} />
                 
@@ -77,6 +80,7 @@ function App() {
                 <Route path="settings" element={<UserSettings />} />
                 <Route path="enrolled" element={<EnrolledCourses />} />
                 <Route path="courses" element={<InstructorCourses />} />
+                <Route path="courses/:courseId/analytics" element={<InstructorCourseAnalyticsPage />} />
                 <Route path="courses/builder" element={<CreateCourseWizard />} />
                 <Route path="courses/builder/:courseId" element={<CreateCourseWizard />} />
               </Route>
