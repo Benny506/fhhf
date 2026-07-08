@@ -121,7 +121,7 @@ export default function QuizEngineRenderer({ lesson, onComplete, isCompleted }) 
                   >
                     {String.fromCharCode(65 + idx)}
                   </div>
-                  <span className={isSelected ? 'text-light' : 'text-dark'}>{option}</span>
+                  <span style={{ color: 'inherit' }}>{option}</span>
                 </div>
                 {icon}
               </div>

@@ -40,7 +40,12 @@ export default function InstructorCourses() {
         .order('created_at', { ascending: false });
 
       if (error) throw error;
-      dispatch(setInstructorCourses(data || []));
+      
+      // Filter out original parent courses if they have an active shadow copy draft
+      const shadowParentIds = new Set((data || []).filter(c => c.parent_course_id).map(c => c.parent_course_id));
+      const displayCourses = (data || []).filter(c => !shadowParentIds.has(c.id));
+      
+      dispatch(setInstructorCourses(displayCourses));
     } catch (err) {
       console.error(err);
       dispatch(addAlert({ title: 'Fetch Error', message: 'Failed to load your courses.', variant: 'danger' }));
@@ -49,23 +54,29 @@ export default function InstructorCourses() {
     }
   };
 
-  const handleDelete = (courseId, courseTitle) => {
+  const handleDelete = (courseId, courseTitle, isShadowCopy) => {
+    const titleText = isShadowCopy ? 'Discard V2 Draft' : 'Delete Course';
+    const messageText = isShadowCopy 
+      ? `Are you sure you want to discard your draft updates for "${courseTitle}"? Your V1 Published course will remain completely untouched.`
+      : `Are you sure you want to permanently delete "${courseTitle}"? All modules, lessons, and student progress will be lost.`;
+    const confirmBtn = isShadowCopy ? 'Discard Draft' : 'Delete Forever';
+
     dispatch(showConfirmModal({
-      title: 'Delete Course',
-      message: `Are you sure you want to permanently delete "${courseTitle}"? All modules, lessons, and student progress will be lost.`,
+      title: titleText,
+      message: messageText,
       variant: 'danger',
-      confirmText: 'Delete Forever',
+      confirmText: confirmBtn,
       onConfirm: async () => {
-        dispatch(showSubtleLoader('Deleting course...'));
+        dispatch(showSubtleLoader(isShadowCopy ? 'Discarding draft...' : 'Deleting course...'));
         try {
           const { error } = await supabase.from('fhhf_courses').delete().eq('id', courseId);
           if (error) throw error;
           
-          dispatch(removeCourseLocally(courseId));
-          dispatch(addAlert({ title: 'Deleted', message: 'Course has been deleted.', variant: 'success' }));
+          dispatch(addAlert({ title: isShadowCopy ? 'Draft Discarded' : 'Deleted', message: isShadowCopy ? 'V2 draft has been discarded.' : 'Course has been deleted.', variant: 'success' }));
+          fetchCourses(); // Re-fetch to seamlessly bring back the V1 Live course if a shadow copy was deleted
         } catch (err) {
           console.error(err);
-          dispatch(addAlert({ title: 'Delete Failed', message: 'Failed to delete the course.', variant: 'danger' }));
+          dispatch(addAlert({ title: 'Delete Failed', message: 'Failed to delete.', variant: 'danger' }));
         } finally {
           dispatch(hideSubtleLoader());
         }
@@ -73,15 +84,58 @@ export default function InstructorCourses() {
     }));
   };
 
-  const getStatusBadge = (course) => {
-    switch(course.status) {
-      case 'published': return <Badge bg="success" className="rounded-pill">Published</Badge>;
-      case 'pending_approval': return <Badge bg="info" className="rounded-pill">Pending Approval</Badge>;
-      case 'draft':
-        if (course.rejection_reason) return <Badge bg="danger" className="rounded-pill shadow-sm">Needs Revision</Badge>;
-        return <Badge bg="warning" text="dark" className="rounded-pill">Draft</Badge>;
-      default: return <Badge bg="warning" text="dark" className="rounded-pill">Draft</Badge>;
+  const handleEditCourse = async (course, e) => {
+    e.stopPropagation();
+    
+    // If the course is published, we need to create a shadow copy
+    if (course.status === 'published') {
+      dispatch(showSubtleLoader('Creating editable version...'));
+      try {
+        const { data: newShadowId, error } = await supabase.rpc('fhhf_create_shadow_course', { p_course_id: course.id });
+        if (error) throw error;
+        
+        // Navigate to the new shadow copy
+        navigate(`/dashboard/courses/builder/${newShadowId}`);
+      } catch (err) {
+        console.error(err);
+        dispatch(addAlert({ title: 'Edit Failed', message: 'Failed to create an editable version of this published course.', variant: 'danger' }));
+      } finally {
+        dispatch(hideSubtleLoader());
+      }
+    } else {
+      // It's a draft, rejected, or pending, edit directly
+      navigate(`/dashboard/courses/builder/${course.id}`);
     }
+  };
+
+  const getStatusBadge = (course) => {
+    const badges = [];
+    
+    // If it's a shadow copy, it means V1 is currently live
+    if (course.parent_course_id) {
+      badges.push(<Badge key="v1" bg="success" className="rounded-pill shadow-sm">V1 Live</Badge>);
+    }
+
+    switch(course.status) {
+      case 'published': 
+        badges.push(<Badge key="pub" bg="success" className="rounded-pill shadow-sm">Published</Badge>); 
+        break;
+      case 'pending_approval': 
+        badges.push(<Badge key="pend" bg="info" className="rounded-pill shadow-sm text-white">V2 Pending Review</Badge>); 
+        break;
+      case 'draft':
+        if (course.rejection_reason) {
+          badges.push(<Badge key="rej" bg="danger" className="rounded-pill shadow-sm">V2 Needs Revision</Badge>);
+        } else {
+          badges.push(<Badge key="draft" bg="warning" text="dark" className="rounded-pill shadow-sm">{course.parent_course_id ? 'V2 Draft' : 'Draft'}</Badge>);
+        }
+        break;
+      default: 
+        badges.push(<Badge key="def" bg="warning" text="dark" className="rounded-pill shadow-sm">Draft</Badge>); 
+        break;
+    }
+    
+    return <div className="d-flex flex-wrap gap-2">{badges}</div>;
   };
 
   return (
@@ -144,14 +198,14 @@ export default function InstructorCourses() {
                       <Button 
                         variant="light" 
                         className="flex-grow-1 fw-bold rounded-pill text-primary border-primary border-opacity-25"
-                        onClick={(e) => { e.stopPropagation(); navigate(`/dashboard/courses/builder/${c.id}`); }}
+                        onClick={(e) => handleEditCourse(c, e)}
                       >
                         <BsPencilSquare className="me-2" /> Edit
                       </Button>
                       <Button 
                         variant="light" 
                         className="rounded-pill text-danger border-danger border-opacity-25 px-3"
-                        onClick={(e) => { e.stopPropagation(); handleDelete(c.id, c.title); }}
+                        onClick={(e) => { e.stopPropagation(); handleDelete(c.id, c.title, !!c.parent_course_id); }}
                       >
                         <BsTrash />
                       </Button>

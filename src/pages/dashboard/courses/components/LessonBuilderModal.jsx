@@ -14,9 +14,9 @@ export default function LessonBuilderModal({ show, onHide, moduleId, lesson, typ
   const [isPreview, setIsPreview] = useState(false);
 
   // Quiz State
-  const [quizQuestion, setQuizQuestion] = useState('');
-  const [quizOptions, setQuizOptions] = useState(['', '']);
-  const [correctOption, setCorrectOption] = useState(0);
+  const [quizQuestions, setQuizQuestions] = useState([
+    { question: '', options: ['', ''], correct_option_index: 0, explanation: '' }
+  ]);
 
   useEffect(() => {
     if (show) {
@@ -36,38 +36,66 @@ export default function LessonBuilderModal({ show, onHide, moduleId, lesson, typ
         setMediaUrl('');
         setTextContent('');
         setIsPreview(false);
-        setQuizQuestion('');
-        setQuizOptions(['', '']);
-        setCorrectOption(0);
+        setQuizQuestions([{ question: '', options: ['', ''], correct_option_index: 0, explanation: '' }]);
       }
     }
   }, [show, lesson, type]);
 
   const fetchQuizData = async (lessonId) => {
     try {
-      const { data, error } = await supabase.from('fhhf_quizzes').select('*').eq('lesson_id', lessonId).single();
-      if (data) {
-        setQuizQuestion(data.question || '');
-        setQuizOptions(data.options || ['', '']);
-        setCorrectOption(data.correct_option_index || 0);
+      const { data, error } = await supabase.from('fhhf_quizzes')
+        .select('*')
+        .eq('lesson_id', lessonId)
+        .order('order_index', { ascending: true });
+      if (data && data.length > 0) {
+        setQuizQuestions(data.map(q => ({
+          question: q.question || '',
+          options: q.options || ['', ''],
+          correct_option_index: q.correct_option_index || 0,
+          explanation: q.explanation || ''
+        })));
       }
     } catch (err) {
       console.error("Quiz fetch err", err);
     }
   };
 
-  const handleOptionChange = (index, value) => {
-    const newOptions = [...quizOptions];
-    newOptions[index] = value;
-    setQuizOptions(newOptions);
+  const handleAddQuestion = () => {
+    setQuizQuestions([...quizQuestions, { question: '', options: ['', ''], correct_option_index: 0, explanation: '' }]);
   };
 
-  const handleAddOption = () => setQuizOptions([...quizOptions, '']);
-  const handleRemoveOption = (index) => {
-    const newOptions = quizOptions.filter((_, i) => i !== index);
-    setQuizOptions(newOptions);
-    if (correctOption === index) setCorrectOption(0);
-    else if (correctOption > index) setCorrectOption(correctOption - 1);
+  const handleRemoveQuestion = (qIndex) => {
+    const newQs = quizQuestions.filter((_, i) => i !== qIndex);
+    setQuizQuestions(newQs.length ? newQs : [{ question: '', options: ['', ''], correct_option_index: 0, explanation: '' }]);
+  };
+
+  const updateQuestion = (qIndex, field, value) => {
+    const newQs = [...quizQuestions];
+    newQs[qIndex][field] = value;
+    setQuizQuestions(newQs);
+  };
+
+  const updateOption = (qIndex, oIndex, value) => {
+    const newQs = [...quizQuestions];
+    newQs[qIndex].options[oIndex] = value;
+    setQuizQuestions(newQs);
+  };
+
+  const addOptionToQuestion = (qIndex) => {
+    const newQs = [...quizQuestions];
+    newQs[qIndex].options.push('');
+    setQuizQuestions(newQs);
+  };
+
+  const removeOptionFromQuestion = (qIndex, oIndex) => {
+    const newQs = [...quizQuestions];
+    newQs[qIndex].options = newQs[qIndex].options.filter((_, i) => i !== oIndex);
+    if (newQs[qIndex].correct_option_index === oIndex) {
+      newQs[qIndex].correct_option_index = 0;
+    } else if (newQs[qIndex].correct_option_index > oIndex) {
+      newQs[qIndex].correct_option_index -= 1;
+    }
+    setQuizQuestions(newQs);
   };
 
   const handleSave = async () => {
@@ -77,8 +105,9 @@ export default function LessonBuilderModal({ show, onHide, moduleId, lesson, typ
     }
 
     if (type === 'quiz') {
-      if (!quizQuestion.trim() || quizOptions.some(o => !o.trim())) {
-        dispatch(addAlert({ title: 'Invalid Quiz', message: 'Question and all options must be filled.', variant: 'warning' }));
+      const isInvalid = quizQuestions.some(q => !q.question.trim() || q.options.some(o => !o.trim()));
+      if (isInvalid) {
+        dispatch(addAlert({ title: 'Invalid Quiz', message: 'All questions and options must be filled.', variant: 'warning' }));
         return;
       }
     }
@@ -108,24 +137,18 @@ export default function LessonBuilderModal({ show, onHide, moduleId, lesson, typ
 
       // Handle Quiz separate table logic
       if (type === 'quiz') {
-        const quizPayload = {
-          lesson_id: lessonIdToUse,
-          question: quizQuestion,
-          options: quizOptions,
-          correct_option_index: correctOption
-        };
+        await supabase.from('fhhf_quizzes').delete().eq('lesson_id', lessonIdToUse);
 
-        if (!lesson) {
-          await supabase.from('fhhf_quizzes').insert(quizPayload);
-        } else {
-          // It could exist or not exist yet if they switched types, but normally we assume it does if it was a quiz
-          const { data: existing } = await supabase.from('fhhf_quizzes').select('id').eq('lesson_id', lessonIdToUse).single();
-          if (existing) {
-            await supabase.from('fhhf_quizzes').update(quizPayload).eq('lesson_id', lessonIdToUse);
-          } else {
-            await supabase.from('fhhf_quizzes').insert(quizPayload);
-          }
-        }
+        const quizPayload = quizQuestions.map((q, i) => ({
+          lesson_id: lessonIdToUse,
+          question: q.question,
+          options: q.options,
+          correct_option_index: q.correct_option_index,
+          explanation: q.explanation,
+          order_index: i
+        }));
+
+        await supabase.from('fhhf_quizzes').insert(quizPayload);
       }
 
       onSave();
@@ -188,38 +211,69 @@ export default function LessonBuilderModal({ show, onHide, moduleId, lesson, typ
       )}
 
       {type === 'quiz' && (
-        <div className="bg-light p-3 rounded border mb-4">
-          <Form.Group className="mb-3">
-            <Form.Label className="fw-bold text-dark">Question</Form.Label>
-            <Form.Control 
-              type="text" 
-              placeholder="What is..." 
-              value={quizQuestion} 
-              onChange={(e) => setQuizQuestion(e.target.value)} 
-            />
-          </Form.Group>
+        <div className="mb-4">
+          {quizQuestions.map((q, qIndex) => (
+            <div key={qIndex} className="bg-light p-3 rounded border mb-3 position-relative">
+              <div className="d-flex justify-content-between align-items-center mb-3">
+                <h6 className="fw-bold mb-0 text-primary">Question {qIndex + 1}</h6>
+                {quizQuestions.length > 1 && (
+                  <Button variant="link" className="text-danger p-0" onClick={() => handleRemoveQuestion(qIndex)}>
+                    Remove
+                  </Button>
+                )}
+              </div>
 
-          <Form.Label className="fw-bold text-dark">Options (Select the correct one)</Form.Label>
-          {quizOptions.map((opt, i) => (
-            <div key={i} className="d-flex align-items-center gap-2 mb-2">
-              <Form.Check 
-                type="radio" 
-                name="correctOption" 
-                checked={correctOption === i} 
-                onChange={() => setCorrectOption(i)}
-              />
-              <Form.Control 
-                type="text" 
-                value={opt} 
-                onChange={(e) => handleOptionChange(i, e.target.value)} 
-                placeholder={`Option ${i + 1}`}
-              />
-              {quizOptions.length > 2 && (
-                <Button variant="link" className="text-danger p-0" onClick={() => handleRemoveOption(i)}>Remove</Button>
-              )}
+              <Form.Group className="mb-3">
+                <Form.Label className="fw-bold text-dark">Question Text</Form.Label>
+                <Form.Control 
+                  type="text" 
+                  placeholder="What is..." 
+                  value={q.question} 
+                  onChange={(e) => updateQuestion(qIndex, 'question', e.target.value)} 
+                />
+              </Form.Group>
+
+              <Form.Label className="fw-bold text-dark">Options (Select the correct one)</Form.Label>
+              {q.options.map((opt, oIndex) => (
+                <div key={oIndex} className="d-flex align-items-center gap-2 mb-2">
+                  <Form.Check 
+                    type="radio" 
+                    name={`correctOption_${qIndex}`}
+                    checked={q.correct_option_index === oIndex} 
+                    onChange={() => updateQuestion(qIndex, 'correct_option_index', oIndex)}
+                  />
+                  <Form.Control 
+                    type="text" 
+                    value={opt} 
+                    onChange={(e) => updateOption(qIndex, oIndex, e.target.value)} 
+                    placeholder={`Option ${oIndex + 1}`}
+                  />
+                  {q.options.length > 2 && (
+                    <Button variant="link" className="text-danger p-0" onClick={() => removeOptionFromQuestion(qIndex, oIndex)}>Remove</Button>
+                  )}
+                </div>
+              ))}
+              <Button variant="link" className="text-primary p-0 fw-bold mt-1 mb-3" onClick={() => addOptionToQuestion(qIndex)}>
+                + Add Option
+              </Button>
+
+              <Form.Group>
+                <Form.Label className="fw-bold text-dark mb-1">Explanation (Optional)</Form.Label>
+                <Form.Text className="d-block text-muted mb-2">Shown to students after they answer to explain why the selected option is correct.</Form.Text>
+                <Form.Control 
+                  as="textarea"
+                  rows={2}
+                  placeholder="The correct answer is..." 
+                  value={q.explanation} 
+                  onChange={(e) => updateQuestion(qIndex, 'explanation', e.target.value)} 
+                />
+              </Form.Group>
             </div>
           ))}
-          <Button variant="link" className="text-primary p-0 fw-bold mt-2" onClick={handleAddOption}>+ Add Option</Button>
+
+          <Button variant="outline-primary" className="fw-bold rounded-pill w-100 py-2 border-dashed" onClick={handleAddQuestion} style={{ borderStyle: 'dashed', borderWidth: '2px' }}>
+            + Add Another Question
+          </Button>
         </div>
       )}
 

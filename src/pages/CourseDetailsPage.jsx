@@ -5,6 +5,8 @@ import { BsCheckCircleFill, BsPlayCircle, BsChevronRight, BsClock, BsPersonVideo
 import { useDispatch, useSelector } from 'react-redux';
 import { showSubtleLoader, hideSubtleLoader, addAlert, showAppLoader, hideAppLoader } from '../redux/slices/uiSlice';
 import supabase from '../utils/supabase';
+import { usePaystackPayment } from 'react-paystack';
+import { PAYSTACK_CONFIG } from '../utils/paystack';
 
 export default function CourseDetailsPage() {
   const { courseId } = useParams();
@@ -14,7 +16,42 @@ export default function CourseDetailsPage() {
   const [course, setCourse] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('about');
+  const [enrollment, setEnrollment] = useState(null);
   const [enrolling, setEnrolling] = useState(false);
+  const [pendingEnrollment, setPendingEnrollment] = useState(null);
+
+  // Paystack Configuration
+  const paystackConfig = {
+    reference: pendingEnrollment ? `FHHF_ENR_${pendingEnrollment.id}_${new Date().getTime()}` : '',
+    email: user?.email,
+    amount: Math.round((Number(course?.price) || 0) * 100),
+    publicKey: PAYSTACK_CONFIG.PUBLIC_KEY,
+    currency: 'NGN',
+    metadata: {
+      transaction_type: 'fhhf_course',
+      enrollment_id: pendingEnrollment?.id,
+      course_id: course?.id
+    }
+  };
+
+  const initializePayment = usePaystackPayment(paystackConfig);
+
+  useEffect(() => {
+    if (pendingEnrollment) {
+      initializePayment({
+        onSuccess: (response) => {
+          console.log("Course Payment Success:", response);
+          dispatch(addAlert({ variant: 'success', message: 'Payment successful! Welcome to the course.' }));
+          navigate(`/courses/player/${course.id}`);
+        },
+        onClose: () => {
+          setEnrolling(false);
+          setPendingEnrollment(null);
+          dispatch(addAlert({ variant: 'warning', message: 'Payment window closed. You can complete your enrollment later by clicking Enroll again.' }));
+        }
+      });
+    }
+  }, [pendingEnrollment, initializePayment, navigate, dispatch, course?.id]);
 
   useEffect(() => {
     // Dummy courses shouldn't be accessible directly
@@ -52,6 +89,21 @@ export default function CourseDetailsPage() {
       }
 
       setCourse(data);
+
+      // If user is logged in, check their enrollment status
+      if (user?.id) {
+        const { data: enrollData } = await supabase
+          .from('fhhf_user_enrollments')
+          .select('*')
+          .eq('course_id', courseId)
+          .eq('user_id', user.id)
+          .single();
+          
+        if (enrollData) {
+          setEnrollment(enrollData);
+        }
+      }
+
     } catch (err) {
       console.error(err);
       navigate('/courses');
@@ -68,33 +120,38 @@ export default function CourseDetailsPage() {
       return;
     }
 
-    if (!course.is_free) {
-      dispatch(addAlert({ variant: 'info', message: 'Coming Soon! Premium course checkout is under construction.' }));
-      return;
-    }
+    try {      // Check if user is already enrolled with has_paid = true
+      if (enrollment?.has_paid) {
+        navigate(`/courses/player/${course.id}`);
+        return;
+      }
 
-    try {
       setEnrolling(true);
       dispatch(showAppLoader('Processing your enrollment...'));
 
-      const { data, error } = await supabase.rpc('fhhf_enroll_in_course', {
+      const { data: enrollmentId, error } = await supabase.rpc('fhhf_enroll_in_course', {
         p_course_id: course.id
       });
 
       if (error) throw error;
 
-      dispatch(addAlert({ variant: 'success', message: 'Successfully enrolled! Redirecting to course player...' }));
-      navigate(`/learn/${course.id}`);
+      if (course.is_free) {
+        dispatch(addAlert({ variant: 'success', message: 'Successfully enrolled! Redirecting to course player...' }));
+        navigate(`/courses/player/${course.id}`);
+      } else {
+        // It's a paid course. The RPC returned an enrollment ID with has_paid = false.
+        // We set the pendingEnrollment state, which triggers the useEffect to launch Paystack.
+        dispatch(hideAppLoader());
+        setPendingEnrollment({ id: enrollmentId });
+      }
+
     } catch (err) {
       console.error('Enrollment error:', err);
       if (err.message?.includes('Instructors cannot enroll')) {
         dispatch(addAlert({ variant: 'warning', message: 'Instructors cannot enroll in their own courses.' }));
-      } else if (err.message?.includes('Paid course enrollment')) {
-        dispatch(addAlert({ variant: 'info', message: 'Coming Soon! Premium course checkout is under construction.' }));
       } else {
         dispatch(addAlert({ variant: 'danger', message: 'Failed to enroll. Please try again.' }));
       }
-    } finally {
       setEnrolling(false);
       dispatch(hideAppLoader());
     }

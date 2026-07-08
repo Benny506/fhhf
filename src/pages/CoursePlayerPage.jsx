@@ -5,6 +5,8 @@ import { BsCheckCircleFill } from 'react-icons/bs';
 import { useDispatch, useSelector } from 'react-redux';
 import { addAlert, showSubtleLoader, hideSubtleLoader } from '../redux/slices/uiSlice';
 import supabase from '../utils/supabase';
+import { usePaystackPayment } from 'react-paystack';
+import { PAYSTACK_CONFIG } from '../utils/paystack';
 
 import CoursePlayerLayout from '../components/course-player/CoursePlayerLayout';
 import CoursePlayerSidebar from '../components/course-player/CoursePlayerSidebar';
@@ -87,7 +89,10 @@ export default function CoursePlayerPage() {
 
       const sortedMods = modData?.map(mod => ({
         ...mod,
-        lessons: mod.lessons?.sort((a, b) => a.order_index - b.order_index) || []
+        lessons: mod.lessons?.sort((a, b) => a.order_index - b.order_index).map(lesson => ({
+          ...lesson,
+          quizzes: lesson.quizzes?.sort((q1, q2) => (q1.order_index || 0) - (q2.order_index || 0)) || []
+        })) || []
       })) || [];
 
       setModules(sortedMods);
@@ -177,12 +182,69 @@ export default function CoursePlayerPage() {
     }
   };
 
+  // Paystack Configuration for the lock screen
+  const paystackConfig = {
+    reference: `FHHF_ENR_${enrollment?.id}_${new Date().getTime()}`,
+    email: user?.email,
+    amount: Math.round((Number(course?.price) || 0) * 100),
+    publicKey: PAYSTACK_CONFIG.PUBLIC_KEY,
+    currency: 'NGN',
+    metadata: {
+      transaction_type: 'fhhf_course',
+      enrollment_id: enrollment?.id,
+      course_id: course?.id
+    }
+  };
+
+  const initializePayment = usePaystackPayment(paystackConfig);
+
+  const handlePayNow = () => {
+    initializePayment({
+      onSuccess: (response) => {
+        console.log("Course Payment Success:", response);
+        dispatch(addAlert({ variant: 'success', message: 'Payment successful! Unlocking course...' }));
+        // Update local state to unlock immediately
+        setEnrollment(prev => ({ ...prev, has_paid: true }));
+      },
+      onClose: () => {
+        dispatch(addAlert({ variant: 'warning', message: 'Payment window closed. Complete your payment to unlock the course.' }));
+      }
+    });
+  };
+
   if (loading) {
     return (
       <div className="min-vh-100 d-flex flex-column justify-content-center align-items-center bg-light">
         <Spinner animation="border" variant="primary" />
         <p className="mt-3 text-muted fw-bold">Loading Theater Mode...</p>
       </div>
+    );
+  }
+
+  // --- HARD BLOCKER FOR UNPAID COURSES ---
+  if (enrollment && !enrollment.has_paid) {
+    return (
+      <CoursePlayerLayout
+        course={course}
+        progressPercentage={0}
+        sidebar={<div className="p-3 text-muted">Locked</div>}
+      >
+        <div className="d-flex justify-content-center align-items-center" style={{ height: 'calc(100vh - 120px)' }}>
+          <div className="text-center p-5 rounded-4 bg-white shadow-sm border" style={{ maxWidth: '500px' }}>
+            <div className="mb-4 d-inline-flex p-4 rounded-circle bg-warning bg-opacity-10 text-warning">
+              <BsCheckCircleFill size={48} className="opacity-75" />
+            </div>
+            <h3 className="fw-bold mb-3">Payment Required</h3>
+            <p className="text-muted mb-4">
+              You are enrolled in this premium course, but we are still waiting on payment. 
+              Please complete your purchase to unlock the curriculum.
+            </p>
+            <Button variant="primary" size="lg" className="rounded-pill px-5 fw-bold" onClick={handlePayNow}>
+              Pay ₦{course.price?.toLocaleString()} to Unlock
+            </Button>
+          </div>
+        </div>
+      </CoursePlayerLayout>
     );
   }
 
