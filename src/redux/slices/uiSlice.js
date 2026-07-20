@@ -24,6 +24,10 @@ const initialState = {
     title: '',
     description: '',
   },
+  donateModal: {
+    isOpen: false,
+    context: null,
+  },
 };
 
 const uiSlice = createSlice({
@@ -74,6 +78,14 @@ const uiSlice = createSlice({
         description: action.payload.description || '',
       };
     },
+    showDonateModal: (state, action) => {
+      state.donateModal.isOpen = true;
+      state.donateModal.context = action.payload?.context || null;
+    },
+    hideDonateModal: (state) => {
+      state.donateModal.isOpen = false;
+      state.donateModal.context = null;
+    },
   },
 });
 
@@ -82,7 +94,8 @@ export const {
   showSubtleLoader, hideSubtleLoader,
   showConfirmModal, hideConfirmModal,
   addAlert, removeAlert,
-  setTopbarConfig
+  setTopbarConfig,
+  showDonateModal, hideDonateModal
 } = uiSlice.actions;
 
 export const getUiState = (state) => state.ui;

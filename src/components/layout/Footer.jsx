@@ -2,6 +2,7 @@ import React from 'react';
 import { NavLink } from 'react-router-dom';
 import Logo from '../ui/Logo';
 import { BsInstagram, BsTwitter, BsLinkedin, BsArrowUpRight } from 'react-icons/bs';
+import NewsletterSubscribe from '../ui/NewsletterSubscribe';
 
 export default function Footer() {
   return (
@@ -30,7 +31,6 @@ export default function Footer() {
             <h5 className="mb-4" style={{ fontFamily: 'var(--font-family-body)', fontWeight: 600, fontSize: '0.95rem', letterSpacing: '1px', textTransform: 'uppercase' }}>Platform</h5>
             <ul className="list-unstyled d-flex flex-column gap-3">
               <li><NavLink to="/about" className="text-secondary text-decoration-none hover-primary">About Us</NavLink></li>
-              <li><NavLink to="/courses" className="text-secondary text-decoration-none hover-primary">Learning Hub</NavLink></li>
               <li><NavLink to="/courses" className="text-secondary text-decoration-none hover-primary">Courses</NavLink></li>
               <li><NavLink to="/mentors" className="text-secondary text-decoration-none hover-primary">Mentorship</NavLink></li>
             </ul>
@@ -40,10 +40,9 @@ export default function Footer() {
           <div className="col-6 col-lg-2 mb-4 mb-lg-0">
             <h5 className="mb-4" style={{ fontFamily: 'var(--font-family-body)', fontWeight: 600, fontSize: '0.95rem', letterSpacing: '1px', textTransform: 'uppercase' }}>Get Involved</h5>
             <ul className="list-unstyled d-flex flex-column gap-3">
-              <li><NavLink to="/donate" className="text-secondary text-decoration-none hover-primary">Donate <BsArrowUpRight size={12}/></NavLink></li>
-              <li><NavLink to="/partner" className="text-secondary text-decoration-none hover-primary">Partner with Us</NavLink></li>
-              <li><NavLink to="/volunteer" className="text-secondary text-decoration-none hover-primary">Volunteer</NavLink></li>
+              <li><NavLink to="/donate" className="text-secondary text-decoration-none hover-primary">Donate <BsArrowUpRight size={12} /></NavLink></li>
               <li><NavLink to="/contact" className="text-secondary text-decoration-none hover-primary">Contact</NavLink></li>
+              <li><a href="https://chat.whatsapp.com/KQBfStEqlaM3pkChG81n7Z" target="_blank" rel="noopener noreferrer" className="text-secondary text-decoration-none hover-primary">Community</a></li>
             </ul>
           </div>
 
@@ -51,15 +50,7 @@ export default function Footer() {
           <div className="col-lg-3">
             <h5 className="mb-4" style={{ fontFamily: 'var(--font-family-body)', fontWeight: 600, fontSize: '0.95rem', letterSpacing: '1px', textTransform: 'uppercase' }}>Newsletter</h5>
             <p className="text-secondary small mb-3">Stay updated with our latest impact stories and opportunities.</p>
-            <div className="d-flex">
-              <input 
-                type="email" 
-                className="form-control rounded-0 shadow-none border-secondary" 
-                placeholder="Email address" 
-                style={{ backgroundColor: 'transparent' }}
-              />
-              <button className="btn btn-primary rounded-0 px-3">→</button>
-            </div>
+            <NewsletterSubscribe />
           </div>
         </div>
 

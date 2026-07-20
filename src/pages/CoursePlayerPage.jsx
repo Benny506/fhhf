@@ -5,7 +5,7 @@ import { BsCheckCircleFill } from 'react-icons/bs';
 import { useDispatch, useSelector } from 'react-redux';
 import { addAlert, showSubtleLoader, hideSubtleLoader } from '../redux/slices/uiSlice';
 import supabase from '../utils/supabase';
-import { usePaystackPayment } from 'react-paystack';
+import usePaystack from '../hooks/usePaystack';
 import { PAYSTACK_CONFIG } from '../utils/paystack';
 
 import CoursePlayerLayout from '../components/course-player/CoursePlayerLayout';
@@ -196,7 +196,7 @@ export default function CoursePlayerPage() {
     }
   };
 
-  const initializePayment = usePaystackPayment(paystackConfig);
+  const initializePayment = usePaystack(paystackConfig);
 
   const handlePayNow = () => {
     initializePayment({

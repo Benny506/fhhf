@@ -30,35 +30,13 @@ export default function CoursesPage() {
 
       if (error) throw error;
 
-      const realCourses = data || [];
-      const dummyCourses = generateDummyCourses();
-
-      setCourses([...realCourses, ...dummyCourses]);
+      setCourses(data || []);
     } catch (err) {
       console.error('Failed to fetch courses:', err);
     } finally {
       setLoading(false);
       dispatch(hideSubtleLoader());
     }
-  };
-
-  const generateDummyCourses = () => {
-    const categories = ['Technology & Programming', 'Business & Entrepreneurship', 'Design & Creativity', 'Health & Fitness', 'Marketing & Sales', 'Photography & Video', 'Music & Audio', 'Language Learning'];
-    const titles = ['Mastering ', 'The Complete Guide to ', 'Advanced ', 'Introduction to ', 'Crash Course in ', 'Zero to Hero: ', 'Building Real-world '];
-    const topics = ['React JS', 'Startup Finance', 'UI/UX Design', 'Yoga', 'Digital Marketing', 'Data Science', 'Machine Learning', 'Leadership', 'Photography', 'SEO', 'Python', 'Web3', 'Video Editing', 'Spanish', 'Copywriting'];
-
-    return Array.from({ length: 45 }).map((_, i) => ({
-      id: `dummy-${i}`,
-      title: `${titles[i % titles.length]}${topics[i % topics.length]}`,
-      description: 'This is a comprehensive dummy course designed to fill up the UI with realistic content. It covers all the essential topics and provides real-world examples to elevate your skills.',
-      thumbnail_url: `https://picsum.photos/seed/course${i + 100}/1280/720`,
-      is_free: i % 4 === 0,
-      price: i % 4 === 0 ? 0 : parseFloat((19.99 * (1 + (i % 5))).toFixed(2)),
-      status: 'published',
-      category: categories[i % categories.length],
-      instructor: { username: 'FHHF Expert' },
-      created_at: new Date(Date.now() - i * 86400000).toISOString()
-    }));
   };
 
   // Derived state
@@ -213,7 +191,7 @@ export default function CoursesPage() {
                 </div>
                 {filteredCourses.map(course => (
                   <Col xs={12} sm={6} lg={4} xl={3} key={course.id}>
-                    <CourseCard course={course} onViewCourse={() => !String(course.id).startsWith('dummy-') && navigate(`/courses/${course.id}`)} />
+                    <CourseCard course={course} onViewCourse={() => navigate(`/courses/${course.id}`)} />
                   </Col>
                 ))}
               </Row>
@@ -284,7 +262,7 @@ function Swimlane({ title, items, navigate }) {
         <div ref={scrollRef} className="d-flex gap-4 overflow-auto hide-scrollbar pb-4 px-2 px-xl-0" style={{ snapType: 'x mandatory', scrollBehavior: 'smooth' }}>
           {items.map(course => (
             <div key={course.id} style={{ minWidth: '300px', maxWidth: '300px', scrollSnapAlign: 'start' }}>
-              <CourseCard course={course} onViewCourse={() => !String(course.id).startsWith('dummy-') && navigate(`/courses/${course.id}`)} />
+              <CourseCard course={course} onViewCourse={() => navigate(`/courses/${course.id}`)} />
             </div>
           ))}
         </div>

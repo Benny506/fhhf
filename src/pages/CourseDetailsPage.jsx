@@ -5,7 +5,7 @@ import { BsCheckCircleFill, BsPlayCircle, BsChevronRight, BsClock, BsPersonVideo
 import { useDispatch, useSelector } from 'react-redux';
 import { showSubtleLoader, hideSubtleLoader, addAlert, showAppLoader, hideAppLoader } from '../redux/slices/uiSlice';
 import supabase from '../utils/supabase';
-import { usePaystackPayment } from 'react-paystack';
+import usePaystack from '../hooks/usePaystack';
 import { PAYSTACK_CONFIG } from '../utils/paystack';
 
 export default function CourseDetailsPage() {
@@ -34,7 +34,7 @@ export default function CourseDetailsPage() {
     }
   };
 
-  const initializePayment = usePaystackPayment(paystackConfig);
+  const initializePayment = usePaystack(paystackConfig);
 
   useEffect(() => {
     if (pendingEnrollment) {

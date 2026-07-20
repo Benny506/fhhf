@@ -10,4 +10,4 @@ export const PAYSTACK_CONFIG = {
 
   //live
   PUBLIC_KEY: "pk_live_2918aa9afd19dd1b01eb7ecb749523d3b701cf2e"
-};
+}

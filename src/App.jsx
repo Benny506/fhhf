@@ -3,6 +3,7 @@ import AppLoader from './components/ui/AppLoader';
 import SubtleLoader from './components/ui/SubtleLoader';
 import ConfirmModal from './components/ui/ConfirmModal';
 import AppAlertStack from './components/ui/AppAlertStack';
+import GuidedDonateModal from './components/ui/GuidedDonateModal';
 import NoiseOverlay from './components/layout/NoiseOverlay';
 import SiteDataBootstrapper from './components/layout/SiteDataBootstrapper';
 import PublicLayout from './components/layout/PublicLayout';
@@ -102,6 +103,7 @@ function App() {
         <AppLoader />
         <SubtleLoader />
         <ConfirmModal />
+        <GuidedDonateModal />
         <AppAlertStack />
         <NoiseOverlay />
       </BrowserRouter>

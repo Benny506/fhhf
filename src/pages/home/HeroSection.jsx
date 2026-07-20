@@ -1,13 +1,16 @@
 import React from 'react';
 import { Button } from 'react-bootstrap';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import './HeroSection.css';
+import { useNavigate } from 'react-router-dom';
+import { showDonateModal } from '../../redux/slices/uiSlice';
 
 export default function HeroSection() {
   const { scrollY } = useScroll();
   const { data } = useSelector((state) => state.siteContent);
   const content = data?.home?.hero_section;
+  const dispatch = useDispatch();
 
   // Parallax effects updated: text moves up slightly and fades out faster
   const yText = useTransform(scrollY, [0, 400], [0, -100]);
@@ -43,7 +46,7 @@ export default function HeroSection() {
             <h4 className="hero-kicker">
               {content?.kicker || "Freedom Haute Humanitarian Foundation"}
             </h4>
-            <h1 
+            <h1
               className="hero-display-title"
               dangerouslySetInnerHTML={{ __html: content?.title || "Empowering<br />Creatives." }}
             />
@@ -68,11 +71,18 @@ export default function HeroSection() {
         transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1], delay: 0.8 }}
       >
         <div className="d-flex flex-column flex-md-row gap-3 justify-content-center align-items-center">
-          <Button variant="primary" size="lg" className="hero-btn shadow-lg">
+          <Button onClick={() => dispatch(showDonateModal({ context: 'creative' }))} variant="primary" size="lg" className="hero-btn shadow-lg">
             {content?.primaryButton?.text || "Support a Creative"}
           </Button>
           <span className="text-white opacity-50 d-none d-md-block">✦</span>
-          <Button variant="outline-light" size="lg" className="hero-btn hero-btn-outline">
+          <Button 
+            href="https://chat.whatsapp.com/KQBfStEqlaM3pkChG81n7Z"
+            target="_blank"
+            rel="noopener noreferrer"
+            variant="outline-light" 
+            size="lg" 
+            className="hero-btn hero-btn-outline"
+          >
             {content?.secondaryButton?.text || "Join the Hub"}
           </Button>
         </div>

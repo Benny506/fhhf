@@ -2,15 +2,17 @@ import React, { useRef } from 'react';
 import { Button } from 'react-bootstrap';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import { BsArrowRight } from 'react-icons/bs';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import Lottie from 'lottie-react';
 import skillsAnim from '../../assets/lotties/community-1.json';
+import { showDonateModal } from '../../redux/slices/uiSlice';
 
 const LottieComponent = Lottie.default || Lottie;
 
 export default function SpotlightSection({ fadeUp }) {
   const { data } = useSelector((state) => state.siteContent);
   const content = data?.home?.spotlight_section;
+  const dispatch = useDispatch();
 
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -122,7 +124,7 @@ export default function SpotlightSection({ fadeUp }) {
             <p className="text-secondary mb-5" style={{ fontSize: '1.15rem', lineHeight: 1.8 }}>
               {content?.description || "Many brilliant minds lack the basic tools to start their journey. By sponsoring a toolkit, you directly equip a creative with the sewing machines, fabrics, and equipment they need to launch their career."}
             </p>
-            <Button variant="primary" className="editorial-btn shadow-lg d-inline-flex align-items-center gap-3">
+            <Button onClick={() => dispatch(showDonateModal({ context: 'toolkit' }))} variant="primary" className="editorial-btn shadow-lg d-inline-flex align-items-center gap-3">
               {content?.button?.text || "Sponsor a Toolkit"} <BsArrowRight size={20} />
             </Button>
           </motion.div>

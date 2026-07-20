@@ -1,15 +1,21 @@
 import React, { useRef } from 'react';
 import { Button } from 'react-bootstrap';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
+import { showDonateModal } from '../../redux/slices/uiSlice';
 import Lottie from 'lottie-react';
 import communityAnim from '../../assets/lotties/community.json';
+import { useNavigate } from 'react-router-dom';
 
 const LottieComponent = Lottie.default || Lottie;
 
 export default function CtaSection({ fadeUp }) {
+
+  const navigate = useNavigate()
+
   const { data } = useSelector((state) => state.siteContent);
   const content = data?.home?.cta_section;
+  const dispatch = useDispatch();
 
   const containerRef = useRef(null);
   const { scrollYProgress } = useScroll({
@@ -30,10 +36,10 @@ export default function CtaSection({ fadeUp }) {
           zIndex: 0
         }}
       >
-        <motion.img 
-          src={content?.backgroundImage || "https://images.unsplash.com/photo-1574015974293-817f0ebebb74?q=80&w=2069&auto=format&fit=crop"} 
-          alt="Community" 
-          className="w-100 h-100" 
+        <motion.img
+          src={content?.backgroundImage || "https://images.unsplash.com/photo-1574015974293-817f0ebebb74?q=80&w=2069&auto=format&fit=crop"}
+          alt="Community"
+          className="w-100 h-100"
           style={{ objectFit: 'cover', opacity: 0.15, mixBlendMode: 'luminosity', y: yBg, scale: 1.5 }}
         />
       </div>
@@ -58,8 +64,8 @@ export default function CtaSection({ fadeUp }) {
           <span className="text-secondary d-block mb-3 fw-bold tracking-widest text-uppercase" style={{ letterSpacing: '3px' }}>
             {content?.kicker || "Join The Movement"}
           </span>
-          <h2 
-            className="mb-4 text-white" 
+          <h2
+            className="mb-4 text-white"
             style={{ fontFamily: 'var(--font-family-heading)', fontSize: 'clamp(2.5rem, 5vw, 4.5rem)', lineHeight: 1.1 }}
             dangerouslySetInnerHTML={{ __html: content?.headline || "Empower a Creative.<br />Transform a Community." }}
           />
@@ -68,10 +74,10 @@ export default function CtaSection({ fadeUp }) {
           </p>
 
           <div className="d-flex flex-column flex-sm-row justify-content-center gap-3">
-            <Button variant="primary" className="editorial-btn" style={{ borderColor: 'var(--color-secondary)', color: 'var(--color-secondary)' }}>
+            <Button onClick={() => dispatch(showDonateModal({ context: 'partner' }))} variant="primary" className="editorial-btn" style={{ borderColor: 'var(--color-secondary)', color: 'var(--color-secondary)' }}>
               {content?.primaryButton?.text || "Become a Partner"}
             </Button>
-            <Button variant="outline-light" className="editorial-btn" style={{ borderColor: 'rgba(255,255,255,0.3)' }}>
+            <Button onClick={() => navigate('/courses')} variant="outline-secondary" className="editorial-btn" style={{ borderColor: 'rgba(255,255,255,0.3)' }}>
               {content?.secondaryButton?.text || "Explore Hub"}
             </Button>
           </div>
